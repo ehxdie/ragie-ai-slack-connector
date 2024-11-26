@@ -1,6 +1,6 @@
 import express from 'express';
-const { postQuery, getResponse } = require('../Controllers/ragieController');
+import { postQuery, getResponse } from '../controllers/ragieController.js';
 const router = express.Router();
-router.get('/:reply', getResponse);
 router.post('/:query', postQuery);
+router.get('/responses', getResponse);
 export default router;

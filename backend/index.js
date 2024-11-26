@@ -69,6 +69,7 @@ If the user asked for a search and there are no results, make sure to let the us
 and what they might be able to do to find the information they need.
 
 END SYSTEM INSTRUCTIONS`;
+// Array that holds the AI replies
 export async function main() {
     const chatCompletion = await getGroqChatCompletion();
     // Print the completion returned by the LLM.

@@ -4,6 +4,7 @@ import path from 'path';
 import Groq from "groq-sdk";
 import { queries } from "./services/queryService.js";
 import { runAll } from "./connectors/slack.js";
+import { addAnswer } from './services/answerService.js';
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -89,10 +90,16 @@ and what they might be able to do to find the information they need.
 
 END SYSTEM INSTRUCTIONS`;
 
+// Array that holds the AI replies
+
+
 export async function main() {
     const chatCompletion = await getGroqChatCompletion();
     // Print the completion returned by the LLM.
     console.log(chatCompletion.choices[0]?.message?.content || "");
+
+    // Sends the generated answer to the services folder
+    addAnswer(chatCompletion.choices[0]?.message?.content || "");
 }
 
 export const getGroqChatCompletion = async () => {

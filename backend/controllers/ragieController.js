@@ -1,5 +1,6 @@
-import { addQuery } from '../services/queryService';
-const postQuery = async (req, res) => {
+import { addQuery } from '../services/queryService.js';
+import { getAnswers } from '../services/answerService.js';
+export const postQuery = async (req, res) => {
     const query = req.query.paramName;
     if (query) {
         addQuery(query);
@@ -9,6 +10,8 @@ const postQuery = async (req, res) => {
         res.status(400).json({ error: 'Query parameter not provided' });
     }
 };
-const getResponse = async (req, res) => {
+export const getResponse = async (req, res) => {
+    const answers = getAnswers();
+    res.status(200).json({ answers });
 };
-module.exports = { postQuery, getResponse };
+// module.exports = { postQuery, getResponse }

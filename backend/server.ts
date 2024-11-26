@@ -1,9 +1,9 @@
 import express from 'express';
-import queryRoutes from './routes/routes';
+import queryRoutes from './routes/routes.js';
 import { runAll } from "./connectors/slack.js";
 import { main }  from "./index.js";
+import cors from 'cors';
 
-const cors = require('cors');
 
 const app = express();
 
