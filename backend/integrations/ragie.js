@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import fs from "fs";
 import path from 'path';
 import Groq from "groq-sdk";
-import { queries } from "./services/queryService.js";
+import { queries } from "../services/queryService.js";
+import { addAnswer } from '../services/answerService.js';
 import dotenv from "dotenv";
 dotenv.config();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -32,7 +33,6 @@ for (const file of files) {
 // Retrieving chunks 
 // Getting users latest query
 const query = queries[queries.length - 1];
-// const query = "Give me a summary of the channel conversations";
 const response = await fetch("https://api.ragie.ai/retrievals", {
     method: "POST",
     headers: {
@@ -46,34 +46,39 @@ if (!response.ok) {
     process.exit(1);
 }
 // Setting up generation 
+// ${chunkText}
 const data = await response.json();
 const chunkText = data.scored_chunks.map((chunk) => chunk.text);
-const systemPrompt = `These are very important to follow:
-
-You are "Ragie AI", a professional but friendly AI chatbot working as an assitant to the user.
-
-Your current task is to help the user based on all of the information available to you shown below.
-Answer informally, directly, and concisely without a heading or greeting but include everything relevant.
-Use richtext Markdown when appropriate including bold, italic, paragraphs, and lists when helpful.
-If using LaTeX, use double $$ as delimiter instead of single $. Use $$...$$ instead of parentheses.
-Organize information into multiple sections or points when appropriate.
-Don't include raw item IDs or other raw fields from the source.
-Don't use XML or other markup unless requested by the user.
-
-Here is all of the information available to answer the user:
+// const limitedChunkText = chunkText.slice(0, 5);
+// const systemPrompt = `These are very important to follow:
+// You are "Ragie AI", a professional but friendly AI chatbot working as an assitant to the user.
+// Your current task is to help the user based on all of the information available to you shown below.
+// Answer informally, directly, and concisely without a heading or greeting but include everything relevant.
+// Use richtext Markdown when appropriate including bold, italic, paragraphs, and lists when helpful.
+// If using LaTeX, use double $$ as delimiter instead of single $. Use $$...$$ instead of parentheses.
+// Organize information into multiple sections or points when appropriate.
+// Don't include raw item IDs or other raw fields from the source.
+// Don't use XML or other markup unless requested by the user.
+// Here is all of the information available to answer the user:
+// ===
+// ${limitedChunkText.join("\n")}
+// ===
+// If the user asked for a search and there are no results, make sure to let the user know that you couldn't find anything,
+// and what they might be able to do to find the information they need.
+// END SYSTEM INSTRUCTIONS`;
+const limitedChunkText = chunkText.slice(0, 5).join(" ").slice(0, 1000); // Limit chunks
+const systemPrompt = `You are "Ragie AI", a professional but friendly AI chatbot...
+Here is all the information:
 ===
-${chunkText}
+${limitedChunkText}
 ===
-
-If the user asked for a search and there are no results, make sure to let the user know that you couldn't find anything,
-and what they might be able to do to find the information they need.
-
 END SYSTEM INSTRUCTIONS`;
-// Array that holds the AI replies
-export async function main() {
+export async function ragieIntegration() {
     const chatCompletion = await getGroqChatCompletion();
     // Print the completion returned by the LLM.
     console.log(chatCompletion.choices[0]?.message?.content || "");
+    // Sends the generated answer to the services folder
+    addAnswer(chatCompletion.choices[0]?.message?.content || "");
 }
 export const getGroqChatCompletion = async () => {
     return groq.chat.completions.create({
@@ -97,11 +102,10 @@ export const getGroqChatCompletion = async () => {
         // The language model which will generate the completion.
         model: "llama3-8b-8192",
         temperature: 0.5,
-        max_tokens: 1024,
+        // max_tokens: 1024,
+        max_tokens: 256,
         top_p: 1,
         stop: null,
         stream: false,
     });
 };
-// runAll();
-// main();

@@ -66,7 +66,7 @@ async function getMessagesFromChannel(channelId) {
         console.error('Error fetching channel messages:', error);
     }
 }
-export async function runAll() {
+export async function slackIntegration() {
     try {
         await getChannelNames();
         const channelId = await getChannelIdByName("all-new-workspace");

@@ -1,4 +1,3 @@
-// services/answerService.ts
 export const systemPromptAnswers = [];
 // Function to add an answer to the array
 export const addAnswer = (answer) => {

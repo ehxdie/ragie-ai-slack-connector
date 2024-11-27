@@ -1,7 +1,8 @@
 import express from 'express';
 import queryRoutes from './routes/routes.js';
-import { runAll } from "./connectors/slack.js";
-import { main }  from "./index.js";
+import { slackIntegration } from "./integrations/slack.js";
+import { ragieIntegration } from './integrations/ragie.js';
+
 import cors from 'cors';
 
 
@@ -12,12 +13,22 @@ app.use(express.json());
 
 app.use('/api', queryRoutes);
 
-// // Handles slack functionality
-// runAll();
+// Start the server and run initialization functions
+app.listen(process.env.PORT, async () => {
+    console.log(`Listening on port ${process.env.PORT}...`);
 
-// // Handles ragie functionality
-// main();
+    try {
+        // Run Slack functionality
+        console.log('Initializing Slack integration...');
+        await slackIntegration();
 
-app.listen(process.env.PORT || 3000, () => {
-    console.log(`Listening on port ${process.env.PORT || 3000}...`);
-})
+        // Run Ragie functionality
+        console.log('Initializing Ragie integration...');
+        await ragieIntegration();
+
+        console.log('All services initialized successfully.');
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        process.exit(1); // Exit the process if critical initialization fails
+    }
+});

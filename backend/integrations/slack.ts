@@ -87,7 +87,7 @@ async function getMessagesFromChannel(channelId: string): Promise<SlackMessage[]
 }
 
 
-export async function runAll() {
+export async function slackIntegration() {
     try {
         await getChannelNames();
         const channelId = await getChannelIdByName("all-new-workspace");
