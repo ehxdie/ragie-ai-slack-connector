@@ -21,7 +21,7 @@ export const postQuery = async (req: Request, res: Response) => {
 export const getResponse = async (req: Request, res: Response) => {
     const answers = getAnswers();
     if (answers) {
-        res.status(200).json({ answers });
+        res.status(200).json({ response: answers });
     } else {
         res.status(400).json({ error: 'No answers available' });
     }

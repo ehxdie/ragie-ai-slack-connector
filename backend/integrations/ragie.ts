@@ -12,8 +12,8 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 
 const apiKey = process.env.API_KEY;
-// const directory = process.env.DIRECTORY;
-const directory = "/home/edidiong/Applications/repositories/ragie-ai-slack-connector/backend/documents";
+const directory = process.env.DIRECTORY || "/default/path";;
+//const directory = "/home/edidiong/Applications/repositories/ragie-ai-slack-connector/backend/documents";
 
 const files = fs.readdirSync(directory);
 
