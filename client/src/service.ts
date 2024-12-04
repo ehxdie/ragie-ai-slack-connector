@@ -4,12 +4,21 @@ export async function sendAllMessages(chats: unknown) {
 
   try {
     // Post user query to the endpoint
-    await fetch(`http://localhost:3000/api?paramName=${encodeURIComponent(paramName)}`, {
+    
+    // await fetch(`http://localhost:3000/api?paramName=${encodeURIComponent(paramName)}`, {
+    //   method: 'POST'
+    // });
+    //https://ragie-ai-slack-connector.vercel.app/api/responses
+
+    await fetch(`https://ragie-ai-slack-connector.vercel.app/api?paramName=${encodeURIComponent(paramName)}`, {
       method: 'POST'
     });
 
     // Fetch response from the responses endpoint
-    const responseData = await fetch('http://localhost:3000/api/responses');
+
+    //const responseData = await fetch('http://localhost:3000/api/responses');
+    const responseData = await fetch('https://ragie-ai-slack-connector.vercel.app/api/responses');
+
     const data = await responseData.json();
     console.log(data);
     const latestResponse = data.response
