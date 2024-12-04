@@ -8,9 +8,10 @@ import dotenv from "dotenv";
 dotenv.config();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const apiKey = process.env.API_KEY;
-const directory = process.env.DIRECTORY || "/default/path";
-;
-//const directory = "/home/edidiong/Applications/repositories/ragie-ai-slack-connector/backend/documents";
+const directory = process.env.DIRECTORY || '/tmp/documents';
+if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory, { recursive: true });
+}
 const files = fs.readdirSync(directory);
 // Loading slack data into ragie
 for (const file of files) {

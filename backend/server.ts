@@ -1,7 +1,8 @@
 import express from 'express';
-import queryRoutes from './routes/routes.js';
+import Routes from './routes/routes.js';
 import { slackIntegration } from "./integrations/slack.js";
 import { ragieIntegration } from './integrations/ragie.js';
+import bodyParser from "body-parser";
 
 import cors from 'cors';
 
@@ -10,8 +11,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
 
-app.use('/api', queryRoutes);
+app.use('/api', Routes);
 
 // Start the server and run initialization functions
 app.listen(process.env.PORT, async () => {
