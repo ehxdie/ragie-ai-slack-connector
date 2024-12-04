@@ -6,15 +6,11 @@ import path  from 'path';
 dotenv.config();
 
 
-// Define the full path to the 'documents' directory
-const filePath = '/home/edidiong/Applications/repositories/ragie-ai-slack-connector/backend/documents/channel_messages.json';
+const DIRECTORY = process.env.DIRECTORY || '/tmp';
+const filePath = path.join(DIRECTORY, 'channel_messages.json');
 
-// Make sure the parent directory exists before writing the file
-const documentsDir = path.dirname(filePath);
-
-// Ensure the 'documents' directory exists
-if (!fs.existsSync(documentsDir)) {
-    fs.mkdirSync(documentsDir, { recursive: true });
+if (!fs.existsSync(DIRECTORY)) {
+ fs.mkdirSync(DIRECTORY, { recursive: true });
 }
 
 // Slack token
