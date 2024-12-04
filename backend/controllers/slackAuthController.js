@@ -18,7 +18,7 @@ export const slackOauthCallback = async (req, res) => {
                 client_id: SLACK_CLIENT_ID,
                 client_secret: SLACK_CLIENT_SECRET,
                 code: code,
-                //redirect_uri: REDIRECT_URI,
+                redirect_uri: REDIRECT_URI,
             },
         });
         const data = response.data;
