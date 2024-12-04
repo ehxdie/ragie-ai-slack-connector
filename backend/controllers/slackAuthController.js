@@ -6,7 +6,7 @@ const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI || "http://localhost:3000/api/slack/oauth/callback";
 // Handle Slack OAuth callback
 export const slackOauthCallback = async (req, res) => {
-    const code = req.query;
+    const { code } = req.query;
     console.log(code);
     if (!code) {
         return res.status(400).send("Authorization code not found!");
