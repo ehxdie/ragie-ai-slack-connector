@@ -12,7 +12,7 @@ const REDIRECT_URI = process.env.REDIRECT_URI || "http://localhost:3000/api/slac
 // Handle Slack OAuth callback
 export const slackOauthCallback = async (req: Request, res: Response) => {
 
-    const code = req.query;
+    const { code } = req.query;
     console.log(code);
 
     if (!code) {
