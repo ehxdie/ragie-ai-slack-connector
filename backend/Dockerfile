@@ -4,14 +4,11 @@ FROM node:18-alpine
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json into the container
-COPY package.json package-lock.json /app/
+# Copy the rest of the application code to the container
+COPY . .
 
 # Install dependencies
 RUN npm install
-
-# Copy the rest of the application code to the container
-COPY . .
 
 # Expose the port your app will run on
 EXPOSE 3000
