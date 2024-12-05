@@ -5,7 +5,12 @@ import { ragieIntegration } from './integrations/ragie.js';
 import bodyParser from "body-parser";
 import cors from 'cors';
 const app = express();
-app.use(cors());
+// Add CORS middleware
+app.use(cors({
+    origin: ['http://localhost:5173'], // Allowed frontend origin(s)
+    methods: ['GET', 'POST'], // Allowed HTTP methods
+    credentials: true, // Include credentials if necessary
+}));
 app.use(express.json());
 app.use(bodyParser.json());
 app.use('/api', Routes);

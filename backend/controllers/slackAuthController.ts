@@ -6,7 +6,7 @@ dotenv.config();
 
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI || "http://localhost:3000/api/slack/oauth/callback";
+//const REDIRECT_URI = process.env.REDIRECT_URI || "http://localhost:3000/api/slack/oauth/callback";
 
 
 // Handle Slack OAuth callback
@@ -26,7 +26,7 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
                 client_id: SLACK_CLIENT_ID,
                 client_secret: SLACK_CLIENT_SECRET,
                 code: code,
-                redirect_uri: REDIRECT_URI,
+                redirect_uri: "https://ragie-ai-slack-connector.vercel.app/api/slack/oauth/callback"
             },
         });
 
