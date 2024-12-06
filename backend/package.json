@@ -2,11 +2,12 @@
   "name": "ragie-ai-slack-connector",
   "version": "1.0.0",
   "description": "Ragie slack connector",
-  "main": "index.js",
+  "main": "dist/server.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/server.js"
   },
   "author": "",
   "license": "ISC",
