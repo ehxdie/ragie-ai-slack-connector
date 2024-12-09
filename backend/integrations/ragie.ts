@@ -124,7 +124,7 @@ export const getGroqChatCompletion = async () => {
             // assistant and can be used to provide specific instructions for
             // how it should behave throughout the conversation.
             {
-                role: "system",
+            role: "system",
                 content: systemPrompt,
             },
 
