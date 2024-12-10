@@ -5,6 +5,7 @@ import { ragieIntegration } from '../integrations/ragie.js';
 
 
 export const postQuery = async (req: Request, res: Response) => {
+    console.log(req.query);
     const query = req.query.paramName as string;
     if (query) {
         addQuery(query);
