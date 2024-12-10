@@ -3,7 +3,9 @@ import Routes from './routes/routes.js';
 import { slackIntegration } from "./integrations/slack.js";
 import { ragieIntegration } from './integrations/ragie.js';
 import bodyParser from "body-parser";
+import dotenv from "dotenv";
 import cors from 'cors';
+dotenv.config();
 const app = express();
 // Add CORS middleware
 app.use(cors({

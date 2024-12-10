@@ -4,15 +4,15 @@
   "description": "Ragie slack connector",
   "main": "dist/server.js",
   "type": "module",
- "scripts": {
-  "build": "tsc && eslint 'src/**/*.ts'",
-  "test": "jest",
-  "start": "node --max-old-space-size=4096 dist/server.js",
-  "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-  "lint": "eslint '**/*.ts'",
-  "lint:fix": "eslint '**/*.ts' --fix",
-  "prepare": "husky init"
-},
+  "scripts": {
+    "build": "tsc && eslint '**/*.ts'",
+    "test": "jest",
+    "start": "node --max-old-space-size=4096 dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "lint": "eslint '**/*.ts'",
+    "lint:fix": "eslint '**/*.ts' --fix",
+    "prepare": "husky init"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint",
@@ -22,12 +22,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/js": "^9.15.0",
+    "@eslint/js": "^9.16.0",
     "@slack/web-api": "^7.7.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "eslint": "^9.16.0",
@@ -40,7 +42,7 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.15.0",
+    "typescript-eslint": "^8.18.0",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4"
   },
