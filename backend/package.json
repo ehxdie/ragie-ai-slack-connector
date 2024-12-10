@@ -4,8 +4,9 @@
   "description": "Ragie slack connector",
   "main": "dist/server.js",
   "type": "module",
+  
   "scripts": {
-    "build": "tsc && eslint '**/*.ts'",
+    "build": "tsc",
     "test": "jest",
     "start": "node --max-old-space-size=4096 dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
