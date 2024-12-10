@@ -6,12 +6,13 @@ import path  from 'path';
 dotenv.config();
 
 
-const DIRECTORY = process.env.DIRECTORY || '/tmp';
-const filePath = path.join(DIRECTORY, 'channel_messages.json');
+// const DIRECTORY = process.env.DIRECTORY || '/tmp';
+// const filePath = path.join(DIRECTORY, 'channel_messages.json');
 
-if (!fs.existsSync(DIRECTORY)) {
- fs.mkdirSync(DIRECTORY, { recursive: true });
-}
+// if (!fs.existsSync(DIRECTORY)) {
+//  fs.mkdirSync(DIRECTORY, { recursive: true });
+// }
+export const SlackMessages: SlackMessage[] = [];
 
 // Slack token
 const token: string | undefined = process.env.SLACK_TOKEN;
@@ -73,8 +74,9 @@ async function getMessagesFromChannel(channelId: string): Promise<SlackMessage[]
                 text: message.text,
                 ts: message.ts,
             }));
-            fs.writeFileSync(filePath, JSON.stringify(messagesJson, null, 2));
-            console.log('Messages saved to channel_messages.json');
+            // fs.writeFileSync(filePath, JSON.stringify(messagesJson, null, 2));
+            SlackMessages.push(...messagesJson);
+            console.log(SlackMessages);
             return messagesJson;
         }
     } catch (error) {

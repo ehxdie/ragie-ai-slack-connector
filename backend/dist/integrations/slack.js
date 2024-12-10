@@ -1,13 +1,12 @@
 import { WebClient } from '@slack/web-api';
-import * as fs from 'fs';
 import dotenv from 'dotenv';
-import path from 'path';
 dotenv.config();
-const DIRECTORY = process.env.DIRECTORY || '/tmp';
-const filePath = path.join(DIRECTORY, 'channel_messages.json');
-if (!fs.existsSync(DIRECTORY)) {
-    fs.mkdirSync(DIRECTORY, { recursive: true });
-}
+// const DIRECTORY = process.env.DIRECTORY || '/tmp';
+// const filePath = path.join(DIRECTORY, 'channel_messages.json');
+// if (!fs.existsSync(DIRECTORY)) {
+//  fs.mkdirSync(DIRECTORY, { recursive: true });
+// }
+export const SlackMessages = [];
 // Slack token
 const token = process.env.SLACK_TOKEN;
 if (!token) {
@@ -54,8 +53,9 @@ async function getMessagesFromChannel(channelId) {
                 text: message.text,
                 ts: message.ts,
             }));
-            fs.writeFileSync(filePath, JSON.stringify(messagesJson, null, 2));
-            console.log('Messages saved to channel_messages.json');
+            // fs.writeFileSync(filePath, JSON.stringify(messagesJson, null, 2));
+            SlackMessages.push(...messagesJson);
+            console.log(SlackMessages);
             return messagesJson;
         }
     }
