@@ -5,18 +5,23 @@ export async function sendAllMessages(chats: unknown) {
   try {
     // Post user query to the endpoint
     
-    await fetch(`http://localhost:3000/api?paramName=${encodeURIComponent(paramName)}`, {
-      method: 'POST'
-    });
-
-    // await fetch(`https://ragie-ai-slack-connector.vercel.app/api?paramName=${encodeURIComponent(paramName)}`, {
+    // Local 
+    // await fetch(`http://localhost:3000/api?paramName=${encodeURIComponent(paramName)}`, {
     //   method: 'POST'
     // });
 
+    // Production
+    await fetch(`https://ragie-ai-slack-connector-9yhn.onrender.com/api?paramName=${encodeURIComponent(paramName)}`, {
+      method: 'POST'
+    });
+
     // Fetch response from the responses endpoint
 
-    const responseData = await fetch('http://localhost:3000/api/responses');
-    // const responseData = await fetch('https://ragie-ai-slack-connector.vercel.app/api/responses');
+    // Local
+    // const responseData = await fetch('http://localhost:3000/api/responses');
+
+    // Production
+    const responseData = await fetch('https://ragie-ai-slack-connector-9yhn.onrender.com/api/responses');
 
     const data = await responseData.json();
     console.log(data);

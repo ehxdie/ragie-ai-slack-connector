@@ -12,6 +12,7 @@ dotenv.config();
 // if (!fs.existsSync(DIRECTORY)) {
 //  fs.mkdirSync(DIRECTORY, { recursive: true });
 // }
+
 export const SlackMessages: SlackMessage[] = [];
 
 // Slack token

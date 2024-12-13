@@ -2,7 +2,7 @@ import { addQuery } from '../services/queryService.js';
 import { getAnswers } from '../services/answerService.js';
 import { ragieIntegration } from '../integrations/ragie.js';
 export const postQuery = async (req, res) => {
-    
+    console.log(req.query);
     const query = req.query.paramName;
     if (query) {
         addQuery(query);

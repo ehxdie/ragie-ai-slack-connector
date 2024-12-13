@@ -4,7 +4,7 @@ import { slackOauthCallback } from "../controllers/slackAuthController.js";
 const router = express.Router();
 router.post('/', postQuery);
 router.get('/responses', getResponse);
-router.get('/slack/oauth/callback', async (req, res) => {
+router.get('/slack/install', async (req, res) => {
     await slackOauthCallback(req, res);
 });
 export default router;
