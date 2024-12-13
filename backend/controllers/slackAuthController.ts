@@ -65,10 +65,20 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
         console.log(`Slack app installed for team ${data.team.name}`);
 
         // Respond to the user or redirect them to a success page
-        res.send("Slack app successfully installed!");
+        res.send(`
+            <html>
+                <body>
+                    <h1>Slack app successfully installed!</h1>
+                    <p>You will be redirected shortly...</p>
+                <script>
+                    setTimeout(() => {
+                    window.location.href = "http://localhost:5173/";
+                    }, 3000); // Redirect after 3 seconds
+                </script>
+                </body>
+            </html>
+        `);
 
-        // Redirect to the desired URL
-        res.redirect("http://localhost:5173/");
 
     } catch (error: unknown) {
         console.error("Error exchanging code for token:", (error as Error).message);
