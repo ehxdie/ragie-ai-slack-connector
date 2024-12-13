@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { slackInstallationData } from '../services/slackInstallationData.js';
 import axios from "axios";
 import dotenv from "dotenv";
 
@@ -19,6 +20,7 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
     }
 
     try {
+
         // Exchange code for access token
         const response = await axios.post("https://slack.com/api/oauth.v2.access", null, {
             params: {
@@ -41,8 +43,30 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
         console.log(`Team: ${team.name}`);
         console.log(`Authed User: ${authed_user.id}`);
 
+        // Extract key information
+        const installationData = {
+            teamId: data.team.id,
+            teamName: data.team.name,
+            botUserId: data.bot_user_id,
+            botAccessToken: data.access_token,
+            userAccessToken: data.authed_user.access_token,
+            userId: data.authed_user.id,
+            appId: data.app_id,
+            scopes: {
+                botScopes: data.scope.split(','),
+                userScopes: data.authed_user.scope.split(',')
+            },
+            enterpriseId: data.enterprise?.id || null,
+            isEnterpriseInstall: data.is_enterprise_install
+        };
+
+
+        // await saveSlackInstallation(installationData);
+        console.log(`Slack app installed for team ${data.team.name}`);
+
         // Respond to the user or redirect them to a success page
         res.send("Slack app successfully installed!");
+
     } catch (error: unknown) {
         console.error("Error exchanging code for token:", (error as Error).message);
         res.status(500).send("Internal Server Error");
