@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { slackInstallationData } from '../services/slackInstallationData.js';
+// import { slackInstallationData } from '../services/slackInstallationData.js';
 import axios from "axios";
 import dotenv from "dotenv";
 
@@ -66,6 +66,9 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
 
         // Respond to the user or redirect them to a success page
         res.send("Slack app successfully installed!");
+
+        // Redirect to the desired URL
+        res.redirect("http://localhost:5173/");
 
     } catch (error: unknown) {
         console.error("Error exchanging code for token:", (error as Error).message);
