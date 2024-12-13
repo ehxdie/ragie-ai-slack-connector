@@ -34,6 +34,7 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             return res.status(400).send(`Error from Slack: ${data.error}`);
         }
 
+        console.log(data);
         // Extract and use data
         const { access_token, team, authed_user } = data;
         console.log(`Access Token: ${access_token}`);
