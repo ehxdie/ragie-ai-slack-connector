@@ -91,7 +91,7 @@
 //         console.error('Error in runAll:', error);
 //     }
 // }
-import { returnCurrentToken } from '../services/slackInstallationData';
+import { returnCurrentToken } from '../services/slackInstallationData.js';
 import { WebClient } from '@slack/web-api';
 import dotenv from 'dotenv';
 
