@@ -113,6 +113,7 @@ interface SlackMessage {
 // Slack token 
 
 const token: string | null = await returnCurrentToken();
+console.log(token);
 
 if (!token) {
     throw new Error('SLACK_TOKEN is not defined.');
