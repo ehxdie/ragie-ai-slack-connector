@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-// import { slackInstallationData } from '../services/slackInstallationData.js';
+import { saveSlackInstallation } from '../services/slackInstallationData.js';
 import axios from "axios";
 import dotenv from "dotenv";
+
 
 dotenv.config();
 
@@ -53,15 +54,17 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             userId: data.authed_user.id,
             appId: data.app_id,
             scopes: {
-                botScopes: data.scope.split(','),
-                userScopes: data.authed_user.scope.split(',')
+                botScopes: data.scope.split(","),
+                userScopes: data.authed_user.scope.split(","),
             },
             enterpriseId: data.enterprise?.id || null,
-            isEnterpriseInstall: data.is_enterprise_install
+            isEnterpriseInstall: data.is_enterprise_install,
+            timestamp: Date.now()
         };
 
 
-        // await saveSlackInstallation(installationData);
+
+        await saveSlackInstallation(installationData);
         console.log(`Slack app installed for team ${data.team.name}`);
 
         // Respond to the user or redirect them to a success page
