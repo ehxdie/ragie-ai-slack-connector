@@ -8,6 +8,7 @@ dotenv.config();
 interface SlackChannel {
     id: string;
     name: string;
+    [key: string]: any;
 }
 
 interface SlackMessage {
@@ -19,7 +20,7 @@ interface SlackMessage {
 
 // Slack token 
 // const token: string | null = await returnCurrentToken();
-const token: string | undefined = process.env.SLACK_TOKEN;
+const token: string | undefined = process.env.SlACK_TOKEN;
 console.log(token);
 
 if (!token) {
@@ -28,6 +29,7 @@ if (!token) {
 
 // Initialize the Slack client
 const slackClient = new WebClient(token);
+
 
 // Store Slack messages
 export const SlackMessages: SlackMessage[] = [];
@@ -40,8 +42,19 @@ async function getPublicChannels(): Promise<SlackChannel[]> {
         });
 
         const publicChannels = result.channels || [];
+
+        // Array to store channel id and channel name
+        const ChannelInformation: SlackChannel[] = [];
+
+        publicChannels.forEach((channel: SlackChannel) => {
+            ChannelInformation.push({
+                id: channel.id,
+                name: channel.name,
+            });
+        });
+
         console.log(`Total Public Channels Found: ${publicChannels.length}`);
-        return publicChannels as SlackChannel[];
+        return ChannelInformation as SlackChannel[];
     } catch (error) {
         console.error('Error fetching public channels:', error);
         return [];
@@ -56,6 +69,7 @@ async function getMessagesFromChannel(channelId: string, channelName: string): P
             limit: 1000  // Retrieve up to 1000 messages
         });
 
+        
         if (result.messages) {
             const channelMessages = (result.messages as any[]).map(message => ({
                 user: message.user,
@@ -76,14 +90,15 @@ async function getMessagesFromChannel(channelId: string, channelName: string): P
 export async function slackIntegration() {
     try {
         // Get public channels
-        const publicChannels = await getPublicChannels();
+        const ChannelInformation = await getPublicChannels();
 
         // Retrieve messages from each public channel
-        for (const channel of publicChannels) {
+        for (const channel of ChannelInformation) {
             await getMessagesFromChannel(channel.id, channel.name);
         }
 
         console.log(`Total Messages Retrieved: ${SlackMessages.length}`);
+        console.log(SlackMessages);
         return SlackMessages;
     } catch (error) {
         console.error('Error in Slack integration:', error);

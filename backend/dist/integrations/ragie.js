@@ -10,6 +10,7 @@ const apiKey = process.env.API_KEY;
 const files = SlackMessages;
 // Loading Slack data into Ragie
 for (const message of files) {
+    console.log(files);
     const formData = new FormData();
     const blob = new Blob([JSON.parse(message.text)], { type: 'application/json' });
     formData.append("file", blob, `${message.ts}.json`);

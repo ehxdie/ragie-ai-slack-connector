@@ -19,8 +19,10 @@ interface SlackMessage {
 // Assume SlackMessages is already an array of SlackMessage
 const files: SlackMessage[] = SlackMessages;
 
+
 // Loading Slack data into Ragie
 for (const message of files) {
+    
     const formData = new FormData();
     const blob = new Blob([JSON.parse(message.text)], { type: 'application/json' });
     formData.append("file", blob, `${message.ts}.json`);
@@ -74,7 +76,7 @@ END SYSTEM INSTRUCTIONS`;
 
 export async function ragieIntegration() {
     const chatCompletion = await getGroqChatCompletion();
-
+    
     // Print the completion returned by the LLM
     console.log(chatCompletion.choices[0]?.message?.content || "");
 
@@ -84,6 +86,7 @@ export async function ragieIntegration() {
 
 export const getGroqChatCompletion = async () => {
     return groq.chat.completions.create({
+        
         messages: [
             {
                 role: "system",

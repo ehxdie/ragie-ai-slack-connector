@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 // Slack token 
 // const token: string | null = await returnCurrentToken();
-const token = process.env.SLACK_TOKEN;
+const token = process.env.SlACK_TOKEN;
 console.log(token);
 if (!token) {
     throw new Error('SLACK_TOKEN is not defined.');
@@ -19,8 +19,16 @@ async function getPublicChannels() {
             types: 'public_channel'
         });
         const publicChannels = result.channels || [];
+        // Array to store channel id and channel name
+        const ChannelInformation = [];
+        publicChannels.forEach((channel) => {
+            ChannelInformation.push({
+                id: channel.id,
+                name: channel.name,
+            });
+        });
         console.log(`Total Public Channels Found: ${publicChannels.length}`);
-        return publicChannels;
+        return ChannelInformation;
     }
     catch (error) {
         console.error('Error fetching public channels:', error);
@@ -53,12 +61,13 @@ async function getMessagesFromChannel(channelId, channelName) {
 export async function slackIntegration() {
     try {
         // Get public channels
-        const publicChannels = await getPublicChannels();
+        const ChannelInformation = await getPublicChannels();
         // Retrieve messages from each public channel
-        for (const channel of publicChannels) {
+        for (const channel of ChannelInformation) {
             await getMessagesFromChannel(channel.id, channel.name);
         }
         console.log(`Total Messages Retrieved: ${SlackMessages.length}`);
+        console.log(SlackMessages);
         return SlackMessages;
     }
     catch (error) {
