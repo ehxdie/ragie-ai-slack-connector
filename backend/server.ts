@@ -46,12 +46,12 @@ app.listen(process.env.PORT, async () => {
 
     try {
         // Verify token availability first
-        const isTokenAvailable = await verifyTokenAvailability();
+        // const isTokenAvailable = await verifyTokenAvailability();
 
-        if (!isTokenAvailable) {
-            console.error('Cannot proceed with integrations due to token unavailability');
-            process.exit(1);
-        }
+        // if (!isTokenAvailable) {
+        //     console.error('Cannot proceed with integrations due to token unavailability');
+        //     process.exit(1);
+        // }
 
         // Run Slack functionality
         console.log('Initializing Slack integration...');
