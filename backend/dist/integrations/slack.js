@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 // Slack token 
 // const token: string | null = await returnCurrentToken();
-const token = process.env.SLACK_TOKEN1;
+const token = process.env.SLACK_TOKEN;
 console.log(token);
 if (!token) {
     throw new Error('SLACK_TOKEN is not defined.');
