@@ -19,7 +19,7 @@ interface SlackMessage {
 
 // Slack token 
 // const token: string | null = await returnCurrentToken();
-const token: string = 'xoxb-8170149328994-8155669495607-xv70hRKWHPJuxtaLAS8yZAjl'
+const token: string | undefined = process.env.SLACKTOKEN1;
 console.log(token);
 
 if (!token) {
