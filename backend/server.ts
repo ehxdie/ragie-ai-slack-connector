@@ -45,17 +45,19 @@ app.listen(process.env.PORT, async () => {
     console.log(`Listening on port ${process.env.PORT}...`);
 
     try {
-        // Run Slack functionality first and wait for messages
-        console.log('Initializing Slack integration...');
-        const slackMessages = await slackIntegration();
-        
-        if (!slackMessages || slackMessages.length === 0) {
-            console.warn('No Slack messages were retrieved');
-        } else {
-            console.log(`Retrieved ${slackMessages.length} messages from Slack`);
-        }
+        // Verify token availability first
+        // const isTokenAvailable = await verifyTokenAvailability();
 
-        // Run Ragie functionality after Slack messages are retrieved
+        // if (!isTokenAvailable) {
+        //     console.error('Cannot proceed with integrations due to token unavailability');
+        //     process.exit(1);
+        // }
+
+        // Run Slack functionality
+        console.log('Initializing Slack integration...');
+        await slackIntegration();
+
+        // Run Ragie functionality
         console.log('Initializing Ragie integration...');
         await ragieIntegration();
 

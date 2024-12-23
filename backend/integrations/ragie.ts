@@ -36,7 +36,6 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[]): Promise<voi
             users: [...new Set(messages.map(msg => msg.user))]
         };
 
-        console.log(documentContent);
         const formData = new FormData();
         const blob = new Blob([JSON.stringify(documentContent)], { type: "application/json" });
         formData.append("file", blob, "slack_messages.json");
@@ -144,39 +143,22 @@ export async function ragieIntegration() {
         // Process all Slack messages as a single document
         await processSlackMessages();
 
-        // Check if there are any queries
-        if (!queries || queries.length === 0) {
-            console.log('No queries available to process');
-            return;
-        }
-
-        // Check if there are any Slack messages
-        if (!SlackMessages || SlackMessages.length === 0) {
-            console.log('No Slack messages available to process');
-            return;
-        }
-
-        console.log('Processing query:', queries[queries.length - 1]);
-        
         // Retrieve and process chunks
         const latestQuery = queries[queries.length - 1];
         const chunkText = await retrieveChunks(latestQuery);
 
-        console.log('Retrieved chunk text length:', chunkText.length);
-
         const systemPrompt = generateSystemPrompt(chunkText);
-        
+
         // Generate a chat completion
         const chatCompletion = await getGroqChatCompletion(systemPrompt, latestQuery);
 
         // Log the completion content
         const completionContent = chatCompletion.choices[0]?.message?.content || "";
-        console.log('Generated completion:', completionContent);
+        console.log(completionContent);
 
         // Save the answer
         addAnswer(completionContent);
     } catch (error) {
         console.error("Error during Ragie integration:", error);
-        throw error; // Rethrow to ensure the error is properly handled
     }
 }
