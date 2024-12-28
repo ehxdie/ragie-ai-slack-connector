@@ -2,8 +2,8 @@
 
 /** @type {import('sequelize-cli').Migration} */
 
-module.exports = {
-  async up (queryInterface, Sequelize) {
+export default {
+  async up (queryInterface: any, Sequelize:any) {
     await queryInterface.createTable('slack_installations', {
       id: {
         type: Sequelize.INTEGER,
@@ -68,7 +68,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface, Sequelize)  {
+  async down (queryInterface: any, Sequelize: any)  {
     await queryInterface.dropTable('slack_installations');
   },
 };

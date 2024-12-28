@@ -6,6 +6,7 @@ const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
 // Handle Slack OAuth callback
 export const slackOauthCallback = async (req, res) => {
+    var _a;
     const { code } = req.query;
     console.log(code);
     if (!code) {
@@ -44,7 +45,7 @@ export const slackOauthCallback = async (req, res) => {
                 botScopes: data.scope.split(","),
                 userScopes: data.authed_user.scope.split(","),
             },
-            enterpriseId: data.enterprise?.id || null,
+            enterpriseId: ((_a = data.enterprise) === null || _a === void 0 ? void 0 : _a.id) || null,
             isEnterpriseInstall: data.is_enterprise_install,
             timestamp: Date.now()
         };

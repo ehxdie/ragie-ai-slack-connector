@@ -118,35 +118,23 @@ async function getGroqChatCompletion(systemPrompt, userQuery) {
  * Main function to handle the Ragie integration.
  */
 export async function ragieIntegration() {
+    var _a, _b;
     try {
         // Process all Slack messages as a single document
         await processSlackMessages();
-        // Check if there are any queries
-        if (!queries || queries.length === 0) {
-            console.log('No queries available to process');
-            return;
-        }
-        // Check if there are any Slack messages
-        if (!SlackMessages || SlackMessages.length === 0) {
-            console.log('No Slack messages available to process');
-            return;
-        }
-        console.log('Processing query:', queries[queries.length - 1]);
         // Retrieve and process chunks
         const latestQuery = queries[queries.length - 1];
         const chunkText = await retrieveChunks(latestQuery);
-        console.log('Retrieved chunk text length:', chunkText.length);
         const systemPrompt = generateSystemPrompt(chunkText);
         // Generate a chat completion
         const chatCompletion = await getGroqChatCompletion(systemPrompt, latestQuery);
         // Log the completion content
-        const completionContent = chatCompletion.choices[0]?.message?.content || "";
-        console.log('Generated completion:', completionContent);
+        const completionContent = ((_b = (_a = chatCompletion.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) || "";
+        console.log(completionContent);
         // Save the answer
         addAnswer(completionContent);
     }
     catch (error) {
         console.error("Error during Ragie integration:", error);
-        throw error; // Rethrow to ensure the error is properly handled
     }
 }

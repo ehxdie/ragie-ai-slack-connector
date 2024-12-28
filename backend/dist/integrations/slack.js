@@ -64,7 +64,9 @@ export async function slackIntegration() {
         const ChannelInformation = await getPublicChannels();
         // Retrieve messages from each public channel
         for (const channel of ChannelInformation) {
-            await getMessagesFromChannel(channel.id, channel.name);
+            if (channel.id && channel.name) {
+                await getMessagesFromChannel(channel.id, channel.name);
+            }
         }
         console.log(`Total Messages Retrieved: ${SlackMessages.length}`);
         console.log(SlackMessages);
