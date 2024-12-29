@@ -23,7 +23,7 @@ const installations: Record<string, SlackInstallationData> = {};
 /**
  * Save Slack installation data in memory.
  */
-export const saveSlackInstallation = (installationData: SlackInstallationData) => {
+export const saveSlackInstallation = async (installationData: SlackInstallationData) => {
     try {
         const teamId = installationData.teamId;
 
@@ -31,7 +31,14 @@ export const saveSlackInstallation = (installationData: SlackInstallationData) =
         installations[teamId] = { ...installationData, timestamp: Date.now() };
 
         console.log(installations);
-        // console.log(`Saved Slack installation for team: ${installationData.teamName}`);
+        
+        try {
+            await saveSlackInstallationInDb(installationData)
+        } catch (error) {
+            console.error('Error saving installation data:', error);
+        }
+        
+        console.log(`Saved Slack installation for team in DB: ${installationData.teamName}`);
 
     } catch (error) {
 
