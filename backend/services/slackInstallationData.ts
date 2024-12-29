@@ -1,3 +1,5 @@
+import db from "../db/models/index.js";
+
 interface SlackInstallationData {
     teamId: string;
     teamName: string;
@@ -38,6 +40,30 @@ export const saveSlackInstallation = (installationData: SlackInstallationData) =
 
     }
 };
+
+export const saveSlackInstallationInDb = async (installationData: SlackInstallationData) => {
+     try {
+        // Save the installation data to the slack_installations table
+        await db.SlackInstallation.create({
+            teamId: installationData.teamId,
+            teamName: installationData.teamName,
+            botUserId: installationData.botUserId,
+            botAccessToken: installationData.botAccessToken,
+            userAccessToken: installationData.userAccessToken,
+            userId: installationData.userId,
+            appId: installationData.appId,
+            scopes: installationData.scopes,
+            enterpriseId: installationData.enterpriseId,
+            isEnterpriseInstall: installationData.isEnterpriseInstall,
+            timestamp: installationData.timestamp,
+        });
+
+        console.log(`Saved Slack installation for team: ${installationData.teamName}`);
+    } catch (error) {
+        console.error("Error saving installation data to the database:", error);
+        throw new Error(`Failed to save installation in database: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+}
 
 export const returnCurrentToken = (): string | null => {
     try {
