@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 
-export default {
+module.exports = {
   async up (queryInterface: any, Sequelize:any) {
     await queryInterface.createTable('slack_installations', {
       id: {

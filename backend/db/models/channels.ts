@@ -1,6 +1,7 @@
 "use strict";
 import { Sequelize, Model, DataTypes, Association } from "sequelize";
 
+
 interface ChannelAttributes {
   id?: number;
   workspaceInstallationId: number;
@@ -10,7 +11,7 @@ interface ChannelAttributes {
 
 interface ChannelCreationAttributes extends Omit<ChannelAttributes, "id" | "createdAt"> { }
 
-export default (sequelize: Sequelize) => {
+module.exports = (sequelize: Sequelize) => {
   class Channel extends Model<ChannelAttributes, ChannelCreationAttributes> implements ChannelAttributes {
     public id!: number;
     public workspaceInstallationId!: number;

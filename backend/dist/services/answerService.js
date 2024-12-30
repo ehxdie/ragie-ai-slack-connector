@@ -1,10 +1,17 @@
-export const systemPromptAnswers = [];
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const systemPromptAnswers = [];
 // Function to add an answer to the array
-export const addAnswer = (answer) => {
+const addAnswer = (answer) => {
     const timestamp = new Date().toISOString(); // Generate the current timestamp
     systemPromptAnswers.push({ answer, timestamp });
 };
 // Function to retrieve all answers
-export const getAnswers = () => {
+const getAnswers = () => {
     return systemPromptAnswers;
+};
+module.exports = {
+    systemPromptAnswers,
+    addAnswer,
+    getAnswers
 };

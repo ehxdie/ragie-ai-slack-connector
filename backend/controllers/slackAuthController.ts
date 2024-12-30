@@ -1,11 +1,7 @@
 import { Request, Response } from 'express';
-import { saveSlackInstallation } from '../services/slackInstallationData.js';
-import axios from "axios";
-import dotenv from "dotenv";
-
-
-
-
+const axios = require("axios");
+const dotenv = require("dotenv");
+const saveSlackInstallation = require("../services/slackInstallationData");
 dotenv.config();
 
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
@@ -55,10 +51,6 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             userAccessToken: data.authed_user.access_token,
             userId: data.authed_user.id,
             appId: data.app_id,
-            scopes: {
-                botScopes: data.scope.split(","),
-                userScopes: data.authed_user.scope.split(","),
-            },
             enterpriseId: data.enterprise?.id || null,
             isEnterpriseInstall: data.is_enterprise_install,
             timestamp: Date.now()

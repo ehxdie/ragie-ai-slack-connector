@@ -15,7 +15,7 @@ interface MessageAttributes {
 
 interface MessageCreationAttributes extends Omit<MessageAttributes, 'id' | 'createdAt'> {}
 
-export default (sequelize: Sequelize) => {
+module.exports = (sequelize: Sequelize) => {
   class Message extends Model<MessageAttributes, MessageCreationAttributes> implements MessageAttributes {
     public id!: number;
     public workspaceInstallationId!: number;

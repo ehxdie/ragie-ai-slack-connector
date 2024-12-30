@@ -1,22 +1,81 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const db = require("../db/models/index.js");
 // In-memory storage for Slack installation data
 const installations = {};
 /**
  * Save Slack installation data in memory.
  */
-export const saveSlackInstallation = (installationData) => {
+const saveSlackInstallation = async (installationData) => {
     try {
         const teamId = installationData.teamId;
         // Add or update the installation data in memory
         installations[teamId] = { ...installationData, timestamp: Date.now() };
         console.log(installations);
-        // console.log(`Saved Slack installation for team: ${installationData.teamName}`);
+        await saveSlackInstallationInDb(installationData);
+        console.log(`Saved Slack installation for team in DB: ${installationData.teamName}`);
     }
     catch (error) {
         console.error("Error saving installation data:", error);
         throw new Error(`Failed to save installation: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
 };
-export const returnCurrentToken = () => {
+const saveSlackInstallationInDb = async (installationData) => {
+    const startTime = Date.now();
+    const logContext = {
+        teamId: installationData.teamId,
+        teamName: installationData.teamName,
+        operation: 'saveSlackInstallationInDb'
+    };
+    try {
+        await db.SlackInstallation.create({
+            teamId: installationData.teamId,
+            teamName: installationData.teamName,
+            botUserId: installationData.botUserId,
+            botAccessToken: installationData.botAccessToken,
+            userAccessToken: installationData.userAccessToken,
+            userId: installationData.userId,
+            appId: installationData.appId,
+            enterpriseId: installationData.enterpriseId,
+            isEnterpriseInstall: installationData.isEnterpriseInstall,
+            timestamp: installationData.timestamp,
+        });
+        console.log({
+            ...logContext,
+            message: 'Successfully saved installation in database',
+            duration: Date.now() - startTime
+        });
+    }
+    catch (error) {
+        let errorMessage = 'Unknown database error';
+        let errorCode = 'UNKNOWN_ERROR';
+        if (error instanceof Error) {
+            // Handle Sequelize-specific errors
+            if ('name' in error && error.name === 'SequelizeUniqueConstraintError') {
+                errorMessage = 'Team installation already exists';
+                errorCode = 'DUPLICATE_TEAM';
+            }
+            else if ('name' in error && error.name === 'SequelizeValidationError') {
+                errorMessage = 'Invalid installation data format';
+                errorCode = 'VALIDATION_ERROR';
+            }
+        }
+        const errorDetails = {
+            ...logContext,
+            errorCode,
+            errorMessage,
+            originalError: error instanceof Error ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            } : 'Unknown error',
+            duration: Date.now() - startTime
+        };
+        console.error('Database save failed:', errorDetails);
+        throw new Error(`Database save failed: ${errorMessage}`);
+    }
+};
+const returnCurrentToken = () => {
     try {
         if (Object.keys(installations).length === 0) {
             console.log("No installations found.");
@@ -33,4 +92,10 @@ export const returnCurrentToken = () => {
         console.error("Error retrieving the latest botAccessToken:", error);
         throw new Error(`Failed to retrieve botAccessToken: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
+};
+module.exports = {
+    saveSlackInstallation,
+    saveSlackInstallationInDb,
+    returnCurrentToken,
+    installations
 };

@@ -1,6 +1,6 @@
-import { returnCurrentToken } from '../services/slackInstallationData.js';
-import { WebClient } from '@slack/web-api';
-import dotenv from 'dotenv';
+const { returnCurrentToken } = require('../services/slackInstallationData');
+const { WebClient } = require('@slack/web-api');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
@@ -30,9 +30,8 @@ if (!token) {
 // Initialize the Slack client
 const slackClient = new WebClient(token);
 
-
 // Store Slack messages
-export const SlackMessages: SlackMessage[] = [];
+const SlackMessages: SlackMessage[] = [];
 
 // Get public channels
 async function getPublicChannels(): Promise<SlackChannel[]> {
@@ -54,7 +53,7 @@ async function getPublicChannels(): Promise<SlackChannel[]> {
         });
 
         console.log(`Total Public Channels Found: ${publicChannels.length}`);
-        return ChannelInformation as SlackChannel[];
+        return ChannelInformation;
     } catch (error) {
         console.error('Error fetching public channels:', error);
         return [];
@@ -69,7 +68,6 @@ async function getMessagesFromChannel(channelId: string, channelName: string): P
             limit: 1000  // Retrieve up to 1000 messages
         });
 
-        
         if (result.messages) {
             const channelMessages = (result.messages as any[]).map(message => ({
                 user: message.user,
@@ -87,16 +85,16 @@ async function getMessagesFromChannel(channelId: string, channelName: string): P
 }
 
 // Main Slack integration function to get messages from public channels
-export async function slackIntegration() {
+async function slackIntegration(): Promise<SlackMessage[]> {
     try {
         // Get public channels
         const ChannelInformation = await getPublicChannels();
 
         // Retrieve messages from each public channel
         for (const channel of ChannelInformation) {
-            if (channel.id && channel.name){
+            if (channel.id && channel.name) {
                 await getMessagesFromChannel(channel.id, channel.name);
-            } 
+            }
         }
 
         console.log(`Total Messages Retrieved: ${SlackMessages.length}`);
@@ -108,3 +106,7 @@ export async function slackIntegration() {
     }
 }
 
+module.exports = {
+    SlackMessages,
+    slackIntegration
+};

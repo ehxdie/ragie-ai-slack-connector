@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Ragie slack connector",
   "main": "dist/server.js",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "test": "jest",

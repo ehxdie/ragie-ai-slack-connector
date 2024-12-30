@@ -1,9 +1,10 @@
-import Groq from "groq-sdk";
-import { queries } from "../services/queryService.js";
-import { addAnswer } from "../services/answerService.js";
-import { SlackMessages } from "./slack.js";
-import dotenv from "dotenv";
-import { console } from "inspector";
+const Groq = require("groq-sdk");
+const { queries } = require("../services/queryService");
+const { addAnswer } = require("../services/answerService");
+const { SlackMessages }= require("./slack");
+const dotenv = require("dotenv");
+
+
 
 dotenv.config();
 
@@ -23,6 +24,12 @@ interface SlackMessage {
  */
 async function uploadSlackMessagesToRagie(messages: SlackMessage[]): Promise<void> {
     try {
+        // Validate messages is an array
+        if (!Array.isArray(messages)) {
+            throw new Error('Messages must be an array');
+        }
+        console.log(messages);
+
         // Create a structured document containing all messages
         const documentContent = {
             messages: messages.map(msg => ({
@@ -138,27 +145,26 @@ async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
 /**
  * Main function to handle the Ragie integration.
  */
-export async function ragieIntegration() {
+async function ragieIntegration() {
     try {
-        // Process all Slack messages as a single document
         await processSlackMessages();
-
-        // Retrieve and process chunks
-        const latestQuery = queries[queries.length - 1];
+        const latestQuery = queries[queries.length - 1]
         const chunkText = await retrieveChunks(latestQuery);
-
         const systemPrompt = generateSystemPrompt(chunkText);
-
-        // Generate a chat completion
         const chatCompletion = await getGroqChatCompletion(systemPrompt, latestQuery);
-
-        // Log the completion content
         const completionContent = chatCompletion.choices[0]?.message?.content || "";
         console.log(completionContent);
-
-        // Save the answer
         addAnswer(completionContent);
     } catch (error) {
         console.error("Error during Ragie integration:", error);
     }
 }
+
+module.exports = {
+    ragieIntegration,
+    uploadSlackMessagesToRagie,
+    processSlackMessages,
+    retrieveChunks,
+    generateSystemPrompt,
+    getGroqChatCompletion
+};

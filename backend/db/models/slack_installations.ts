@@ -9,7 +9,6 @@ interface SlackInstallationAttributes {
   userAccessToken: string;
   userId: string;
   appId: string;
-  botScopes: string[];
   userScopes: string[];
   enterpriseId: string;
   isEnterpriseInstall: boolean;
@@ -18,7 +17,7 @@ interface SlackInstallationAttributes {
 
 interface SlackInstallationCreationAttributes extends Omit<SlackInstallationAttributes, 'id'> { }
 
-export default (sequelize: Sequelize) => {
+module.exports = (sequelize: Sequelize) => {
   class SlackInstallation extends Model<SlackInstallationAttributes, SlackInstallationCreationAttributes>
     implements SlackInstallationAttributes {
     public id!: number;
@@ -29,7 +28,6 @@ export default (sequelize: Sequelize) => {
     public userAccessToken!: string;
     public userId!: string;
     public appId!: string;
-    public botScopes!: string[];
     public userScopes!: string[];
     public enterpriseId!: string;
     public isEnterpriseInstall!: boolean;
@@ -72,7 +70,6 @@ export default (sequelize: Sequelize) => {
       userAccessToken: DataTypes.STRING,
       userId: DataTypes.STRING,
       appId: DataTypes.STRING,
-      botScopes: DataTypes.ARRAY(DataTypes.STRING),
       userScopes: DataTypes.ARRAY(DataTypes.STRING),
       enterpriseId: DataTypes.STRING,
       isEnterpriseInstall: {

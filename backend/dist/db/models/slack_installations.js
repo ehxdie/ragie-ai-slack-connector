@@ -1,6 +1,8 @@
-import { Model, DataTypes } from "sequelize";
-export default (sequelize) => {
-    class SlackInstallation extends Model {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const sequelize_1 = require("sequelize");
+module.exports = (sequelize) => {
+    class SlackInstallation extends sequelize_1.Model {
         static associate(models) {
             // Define associations here
             this.hasMany(models.Channel, {
@@ -19,25 +21,24 @@ export default (sequelize) => {
     }
     SlackInstallation.init({
         id: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        teamId: DataTypes.STRING,
-        teamName: DataTypes.STRING,
-        botUserId: DataTypes.STRING,
-        botAccessToken: DataTypes.STRING,
-        userAccessToken: DataTypes.STRING,
-        userId: DataTypes.STRING,
-        appId: DataTypes.STRING,
-        botScopes: DataTypes.ARRAY(DataTypes.STRING),
-        userScopes: DataTypes.ARRAY(DataTypes.STRING),
-        enterpriseId: DataTypes.STRING,
+        teamId: sequelize_1.DataTypes.STRING,
+        teamName: sequelize_1.DataTypes.STRING,
+        botUserId: sequelize_1.DataTypes.STRING,
+        botAccessToken: sequelize_1.DataTypes.STRING,
+        userAccessToken: sequelize_1.DataTypes.STRING,
+        userId: sequelize_1.DataTypes.STRING,
+        appId: sequelize_1.DataTypes.STRING,
+        userScopes: sequelize_1.DataTypes.ARRAY(sequelize_1.DataTypes.STRING),
+        enterpriseId: sequelize_1.DataTypes.STRING,
         isEnterpriseInstall: {
-            type: DataTypes.BOOLEAN,
+            type: sequelize_1.DataTypes.BOOLEAN,
             defaultValue: false,
         },
-        timestamp: DataTypes.BIGINT,
+        timestamp: sequelize_1.DataTypes.BIGINT,
     }, {
         sequelize,
         modelName: "SlackInstallation",

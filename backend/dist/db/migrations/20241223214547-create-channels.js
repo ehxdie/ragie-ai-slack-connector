@@ -1,6 +1,7 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 /** @type {import('sequelize-cli').Migration} */
-export default {
+module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.createTable('channels', {
             id: {

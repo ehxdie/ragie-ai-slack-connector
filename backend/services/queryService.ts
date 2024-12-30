@@ -1,10 +1,12 @@
 // stores the user queries 
-export const queries: string[] = ["Give me a summary of all the info on the slack channel"]; // In-memory storage for queries
-//export const queries: string[] = [];
-
+const queries: string[] = ["Give me a summary of all the info on the slack channel"]; // In-memory storage for queries
 
 // Function to add a query to storage
-export const addQuery = (query: string) => {
+const addQuery = (query: string): void => {
     queries.push(query);
-}
+};
 
+module.exports = {
+    queries,
+    addQuery
+};

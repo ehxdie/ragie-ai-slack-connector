@@ -1,11 +1,14 @@
-import { saveSlackInstallation } from '../services/slackInstallationData.js';
-import axios from "axios";
-import dotenv from "dotenv";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.slackOauthCallback = void 0;
+const axios = require("axios");
+const dotenv = require("dotenv");
+const saveSlackInstallation = require("../services/slackInstallationData");
 dotenv.config();
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
 // Handle Slack OAuth callback
-export const slackOauthCallback = async (req, res) => {
+const slackOauthCallback = async (req, res) => {
     var _a;
     const { code } = req.query;
     console.log(code);
@@ -41,10 +44,6 @@ export const slackOauthCallback = async (req, res) => {
             userAccessToken: data.authed_user.access_token,
             userId: data.authed_user.id,
             appId: data.app_id,
-            scopes: {
-                botScopes: data.scope.split(","),
-                userScopes: data.authed_user.scope.split(","),
-            },
             enterpriseId: ((_a = data.enterprise) === null || _a === void 0 ? void 0 : _a.id) || null,
             isEnterpriseInstall: data.is_enterprise_install,
             timestamp: Date.now()
@@ -71,3 +70,4 @@ export const slackOauthCallback = async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 };
+exports.slackOauthCallback = slackOauthCallback;

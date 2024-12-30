@@ -1,7 +1,8 @@
 "use strict";
-import { Model, DataTypes } from "sequelize";
-export default (sequelize) => {
-    class Channel extends Model {
+Object.defineProperty(exports, "__esModule", { value: true });
+const sequelize_1 = require("sequelize");
+module.exports = (sequelize) => {
+    class Channel extends sequelize_1.Model {
         static associate(models) {
             this.belongsTo(models.SlackInstallation, {
                 foreignKey: "workspaceInstallationId",
@@ -15,24 +16,24 @@ export default (sequelize) => {
     }
     Channel.init({
         id: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
         workspaceInstallationId: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             references: {
                 model: "slack_installations",
                 key: "id",
             },
         },
         channelName: {
-            type: DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
+            type: sequelize_1.DataTypes.DATE,
+            defaultValue: sequelize_1.DataTypes.NOW,
         },
     }, {
         sequelize,

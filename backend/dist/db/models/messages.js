@@ -1,7 +1,8 @@
 "use strict";
-import { Model, DataTypes } from "sequelize";
-export default (sequelize) => {
-    class Message extends Model {
+Object.defineProperty(exports, "__esModule", { value: true });
+const sequelize_1 = require("sequelize");
+module.exports = (sequelize) => {
+    class Message extends sequelize_1.Model {
         static associate(models) {
             this.belongsTo(models.SlackInstallation, {
                 foreignKey: "workspaceInstallationId",
@@ -15,35 +16,35 @@ export default (sequelize) => {
     }
     Message.init({
         id: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
         workspaceInstallationId: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             references: {
                 model: "slack_installations",
                 key: "id",
             },
         },
         channelId: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             references: {
                 model: "channels",
                 key: "id",
             },
         },
-        originalSenderId: DataTypes.STRING,
-        messageText: DataTypes.TEXT,
-        timestamp: DataTypes.DECIMAL(16, 6),
-        kafkaOffset: DataTypes.BIGINT,
+        originalSenderId: sequelize_1.DataTypes.STRING,
+        messageText: sequelize_1.DataTypes.TEXT,
+        timestamp: sequelize_1.DataTypes.DECIMAL(16, 6),
+        kafkaOffset: sequelize_1.DataTypes.BIGINT,
         processedForRag: {
-            type: DataTypes.BOOLEAN,
+            type: sequelize_1.DataTypes.BOOLEAN,
             defaultValue: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
+            type: sequelize_1.DataTypes.DATE,
+            defaultValue: sequelize_1.DataTypes.NOW,
         },
     }, {
         sequelize,

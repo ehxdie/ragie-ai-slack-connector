@@ -1,6 +1,8 @@
-import dotenv from "dotenv";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv = require("dotenv");
 dotenv.config();
-export default {
+module.exports = {
     "development": {
         "username": process.env.DB_USER,
         "password": process.env.DB_PASSWORD,

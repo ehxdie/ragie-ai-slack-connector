@@ -1,7 +1,9 @@
-import { addQuery } from '../services/queryService.js';
-import { getAnswers } from '../services/answerService.js';
-import { ragieIntegration } from '../integrations/ragie.js';
-export const postQuery = async (req, res) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const addQuery = require("../services/queryService");
+const getAnswers = require("../services/answerService");
+const ragieIntegration = require("../integrations/ragie");
+const postQuery = async (req, res) => {
     console.log(req.query);
     const query = req.query.paramName;
     if (query) {
@@ -16,7 +18,7 @@ export const postQuery = async (req, res) => {
         res.status(400).json({ error: 'Query parameter not provided' });
     }
 };
-export const getResponse = async (req, res) => {
+const getResponse = async (req, res) => {
     const answers = getAnswers();
     if (answers) {
         res.status(200).json({ response: answers });
@@ -25,4 +27,4 @@ export const getResponse = async (req, res) => {
         res.status(400).json({ error: 'No answers available' });
     }
 };
-// module.exports = { postQuery, getResponse }
+module.exports = { postQuery, getResponse };

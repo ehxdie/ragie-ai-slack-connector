@@ -1,7 +1,8 @@
 "use strict";
-import { Model, DataTypes } from "sequelize";
-export default (sequelize) => {
-    class UserQuery extends Model {
+Object.defineProperty(exports, "__esModule", { value: true });
+const sequelize_1 = require("sequelize");
+exports.default = (sequelize) => {
+    class UserQuery extends sequelize_1.Model {
         static associate(models) {
             this.belongsTo(models.SlackInstallation, {
                 foreignKey: "workspaceInstallationId",
@@ -11,36 +12,36 @@ export default (sequelize) => {
     }
     UserQuery.init({
         id: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
         workspaceInstallationId: {
-            type: DataTypes.INTEGER,
+            type: sequelize_1.DataTypes.INTEGER,
             references: {
                 model: "slack_installations",
                 key: "id",
             },
         },
         userSlackId: {
-            type: DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: false,
         },
         queryText: {
-            type: DataTypes.TEXT,
+            type: sequelize_1.DataTypes.TEXT,
             allowNull: false,
         },
         responseText: {
-            type: DataTypes.TEXT,
+            type: sequelize_1.DataTypes.TEXT,
             allowNull: false,
         },
         referencedMessageIds: {
-            type: DataTypes.ARRAY(DataTypes.INTEGER),
+            type: sequelize_1.DataTypes.ARRAY(sequelize_1.DataTypes.INTEGER),
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
+            type: sequelize_1.DataTypes.DATE,
+            defaultValue: sequelize_1.DataTypes.NOW,
         },
     }, {
         sequelize,

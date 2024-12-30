@@ -1,8 +1,9 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 /** @type {import('sequelize-cli').Migration} */
-export default {
+module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('messages', {
+        await queryInterface.createTable('user_queries', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -18,34 +19,21 @@ export default {
                 allowNull: false,
                 onDelete: 'CASCADE',
             },
-            channelId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'channels',
-                    key: 'id',
-                },
-                allowNull: false,
-                onDelete: 'CASCADE',
-            },
-            originalSenderId: {
+            userSlackId: {
                 type: Sequelize.STRING(50),
-                allowNull: true,
+                allowNull: false,
             },
-            messageText: {
+            queryText: {
                 type: Sequelize.TEXT,
                 allowNull: false,
             },
-            timestamp: {
-                type: Sequelize.DECIMAL(16, 6),
+            responseText: {
+                type: Sequelize.TEXT,
                 allowNull: false,
             },
-            kafkaOffset: {
-                type: Sequelize.BIGINT,
+            referencedMessageIds: {
+                type: Sequelize.ARRAY(Sequelize.INTEGER),
                 allowNull: true,
-            },
-            processedForRag: {
-                type: Sequelize.BOOLEAN,
-                defaultValue: false,
             },
             createdAt: {
                 allowNull: false,
@@ -60,6 +48,6 @@ export default {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('messages');
+        await queryInterface.dropTable('user_queries');
     }
 };

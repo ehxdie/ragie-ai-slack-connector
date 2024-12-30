@@ -1,5 +1,8 @@
-import { WebClient } from '@slack/web-api';
-import dotenv from 'dotenv';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const { returnCurrentToken } = require('../services/slackInstallationData');
+const { WebClient } = require('@slack/web-api');
+const dotenv = require('dotenv');
 dotenv.config();
 // Slack token 
 // const token: string | null = await returnCurrentToken();
@@ -11,7 +14,7 @@ if (!token) {
 // Initialize the Slack client
 const slackClient = new WebClient(token);
 // Store Slack messages
-export const SlackMessages = [];
+const SlackMessages = [];
 // Get public channels
 async function getPublicChannels() {
     try {
@@ -58,7 +61,7 @@ async function getMessagesFromChannel(channelId, channelName) {
     }
 }
 // Main Slack integration function to get messages from public channels
-export async function slackIntegration() {
+async function slackIntegration() {
     try {
         // Get public channels
         const ChannelInformation = await getPublicChannels();
@@ -77,3 +80,7 @@ export async function slackIntegration() {
         return [];
     }
 }
+module.exports = {
+    SlackMessages,
+    slackIntegration
+};

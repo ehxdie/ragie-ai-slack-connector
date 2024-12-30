@@ -1,8 +1,9 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 /** @type {import('sequelize-cli').Migration} */
-export default {
+module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('user_queries', {
+        await queryInterface.createTable('messages', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -18,21 +19,34 @@ export default {
                 allowNull: false,
                 onDelete: 'CASCADE',
             },
-            userSlackId: {
+            channelId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'channels',
+                    key: 'id',
+                },
+                allowNull: false,
+                onDelete: 'CASCADE',
+            },
+            originalSenderId: {
                 type: Sequelize.STRING(50),
-                allowNull: false,
-            },
-            queryText: {
-                type: Sequelize.TEXT,
-                allowNull: false,
-            },
-            responseText: {
-                type: Sequelize.TEXT,
-                allowNull: false,
-            },
-            referencedMessageIds: {
-                type: Sequelize.ARRAY(Sequelize.INTEGER),
                 allowNull: true,
+            },
+            messageText: {
+                type: Sequelize.TEXT,
+                allowNull: false,
+            },
+            timestamp: {
+                type: Sequelize.DECIMAL(16, 6),
+                allowNull: false,
+            },
+            kafkaOffset: {
+                type: Sequelize.BIGINT,
+                allowNull: true,
+            },
+            processedForRag: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
             },
             createdAt: {
                 allowNull: false,
@@ -47,6 +61,6 @@ export default {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('user_queries');
+        await queryInterface.dropTable('messages');
     }
 };

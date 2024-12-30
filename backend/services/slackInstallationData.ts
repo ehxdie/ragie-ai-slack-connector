@@ -1,4 +1,5 @@
-import db from "../db/models/index.js";
+const db = require("../db/models/index");
+
 
 interface SlackInstallationData {
     teamId: string;
@@ -8,10 +9,6 @@ interface SlackInstallationData {
     userAccessToken: string;
     userId: string;
     appId: string;
-    scopes: {
-        botScopes: string[];
-        userScopes: string[];
-    };
     enterpriseId?: string | null;
     isEnterpriseInstall: boolean;
     timestamp: number;
@@ -23,7 +20,7 @@ const installations: Record<string, SlackInstallationData> = {};
 /**
  * Save Slack installation data in memory.
  */
-export const saveSlackInstallation = async (installationData: SlackInstallationData) => {
+const saveSlackInstallation = async (installationData: SlackInstallationData) => {
     
     try {
         const teamId = installationData.teamId;
@@ -47,7 +44,7 @@ export const saveSlackInstallation = async (installationData: SlackInstallationD
     }
 };
 
-export const saveSlackInstallationInDb = async (installationData: SlackInstallationData): Promise<void> => {
+const saveSlackInstallationInDb = async (installationData: SlackInstallationData): Promise<void> => {
     const startTime = Date.now();
     const logContext = {
         teamId: installationData.teamId,
@@ -64,7 +61,6 @@ export const saveSlackInstallationInDb = async (installationData: SlackInstallat
             userAccessToken: installationData.userAccessToken,
             userId: installationData.userId,
             appId: installationData.appId,
-            scopes: installationData.scopes,
             enterpriseId: installationData.enterpriseId,
             isEnterpriseInstall: installationData.isEnterpriseInstall,
             timestamp: installationData.timestamp,
@@ -108,7 +104,7 @@ export const saveSlackInstallationInDb = async (installationData: SlackInstallat
     }
 };
 
-export const returnCurrentToken = (): string | null => {
+const returnCurrentToken = (): string | null => {
     try {
         if (Object.keys(installations).length === 0) {
             console.log("No installations found.");
@@ -128,4 +124,11 @@ export const returnCurrentToken = (): string | null => {
         console.error("Error retrieving the latest botAccessToken:", error);
         throw new Error(`Failed to retrieve botAccessToken: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
+};
+
+module.exports = {
+    saveSlackInstallation,
+    saveSlackInstallationInDb,
+    returnCurrentToken,
+    installations
 };
