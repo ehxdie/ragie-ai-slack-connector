@@ -9,13 +9,12 @@ interface SlackInstallationAttributes {
   userAccessToken: string;
   userId: string;
   appId: string;
-  userScopes: string[];
   enterpriseId: string;
   isEnterpriseInstall: boolean;
   timestamp: number;
 }
 
-interface SlackInstallationCreationAttributes extends Omit<SlackInstallationAttributes, 'id'> { }
+interface SlackInstallationCreationAttributes extends Omit<SlackInstallationAttributes, 'id'> {}
 
 module.exports = (sequelize: Sequelize) => {
   class SlackInstallation extends Model<SlackInstallationAttributes, SlackInstallationCreationAttributes>
@@ -28,7 +27,6 @@ module.exports = (sequelize: Sequelize) => {
     public userAccessToken!: string;
     public userId!: string;
     public appId!: string;
-    public userScopes!: string[];
     public enterpriseId!: string;
     public isEnterpriseInstall!: boolean;
     public timestamp!: number;
@@ -70,7 +68,6 @@ module.exports = (sequelize: Sequelize) => {
       userAccessToken: DataTypes.STRING,
       userId: DataTypes.STRING,
       appId: DataTypes.STRING,
-      userScopes: DataTypes.ARRAY(DataTypes.STRING),
       enterpriseId: DataTypes.STRING,
       isEnterpriseInstall: {
         type: DataTypes.BOOLEAN,

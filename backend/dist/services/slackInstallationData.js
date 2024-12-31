@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const db = require("../db/models/index.js");
+const db = require("../db/models/index");
 // In-memory storage for Slack installation data
 const installations = {};
 /**

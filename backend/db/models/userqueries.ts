@@ -13,7 +13,7 @@ interface UserQueryAttributes {
 
 interface UserQueryCreationAttributes extends Omit<UserQueryAttributes, "id" | "createdAt"> { }
 
-export default(sequelize: Sequelize) => {
+module.exports = (sequelize: Sequelize) => {
   class UserQuery extends Model<UserQueryAttributes, UserQueryCreationAttributes> implements UserQueryAttributes {
     public id!: number;
     public workspaceInstallationId!: number;

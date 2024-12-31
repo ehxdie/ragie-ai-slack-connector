@@ -1,14 +1,20 @@
 const fs = require('fs');
 const path = require('path');
-import { Sequelize, DataTypes, Options } from 'sequelize';
+import { Sequelize, DataTypes } from 'sequelize';
 const config = require('../config/config');
+
+interface DbInterface {
+  [key: string]: any;
+  sequelize: Sequelize;
+  Sequelize: typeof Sequelize;
+}
 
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const envConfig = config[env];
 
-const db: { [key: string]: any } = {};
-let sequelize;
+const db: DbInterface = {} as DbInterface;
+let sequelize: Sequelize;
 
 // Check if we have all required environment variables
 if (!envConfig.database || !envConfig.username || !envConfig.password) {
@@ -22,23 +28,49 @@ sequelize = new Sequelize(
   {
     host: envConfig.host,
     dialect: envConfig.dialect,
+    logging: console.log
   }
 );
 
-fs.readdirSync(__dirname)
-  .filter((file:any) => {
+// Read model files
+const modelFiles = fs
+  .readdirSync(__dirname)
+  .filter((file: string) => {
     return (
       file.indexOf('.') !== 0 &&
       file !== basename &&
-      file.slice(-3) === '.js' &&
-      file.indexOf('.test.js') === -1
+      (file.endsWith('.js') || file.endsWith('.ts')) &&
+      !file.endsWith('.test.js') &&
+      !file.endsWith('.test.ts')
     );
-  })
-  .forEach((file: any) => {
-    const model = require(path.join(__dirname, file));
-    db[model.default.name] = model.default(sequelize, DataTypes);
   });
 
+// Load models
+for (const file of modelFiles) {
+  try {
+    const modelPath = path.join(__dirname, file);
+    const model = require(modelPath);
+
+    // Handle both direct function exports and module.exports
+    const modelFunction = typeof model === 'function' ? model : model.default;
+
+    if (typeof modelFunction === 'function') {
+      const modelInstance = modelFunction(sequelize, DataTypes);
+      if (modelInstance.name) {
+        console.log(`Loading model: ${modelInstance.name}`);
+        db[modelInstance.name] = modelInstance;
+      } else {
+        console.warn(`Model in ${file} has no name property`);
+      }
+    } else {
+      console.warn(`Model ${file} has no default export or is not a function`);
+    }
+  } catch (error) {
+    console.error(`Error loading model ${file}:`, error);
+  }
+}
+
+// Initialize associations
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
@@ -48,4 +80,4 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-module.exports = db;
+module.exports = {db};

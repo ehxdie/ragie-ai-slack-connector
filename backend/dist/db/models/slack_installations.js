@@ -32,7 +32,6 @@ module.exports = (sequelize) => {
         userAccessToken: sequelize_1.DataTypes.STRING,
         userId: sequelize_1.DataTypes.STRING,
         appId: sequelize_1.DataTypes.STRING,
-        userScopes: sequelize_1.DataTypes.ARRAY(sequelize_1.DataTypes.STRING),
         enterpriseId: sequelize_1.DataTypes.STRING,
         isEnterpriseInstall: {
             type: sequelize_1.DataTypes.BOOLEAN,

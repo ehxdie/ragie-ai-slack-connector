@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Groq = require("groq-sdk");
-const { queries } = require("../services/queryService.js");
-const { addAnswer } = require("../services/answerService.js");
-const SlackMessages = require("./slack.js");
+const { queries } = require("../services/queryService");
+const { addAnswer } = require("../services/answerService");
+const { SlackMessages } = require("./slack");
 const dotenv = require("dotenv");
 dotenv.config();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -14,6 +14,11 @@ const apiKey = process.env.API_KEY;
  */
 async function uploadSlackMessagesToRagie(messages) {
     try {
+        // Validate messages is an array
+        if (!Array.isArray(messages)) {
+            throw new Error('Messages must be an array');
+        }
+        console.log(messages);
         // Create a structured document containing all messages
         const documentContent = {
             messages: messages.map(msg => ({

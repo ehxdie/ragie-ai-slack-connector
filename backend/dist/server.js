@@ -42,7 +42,6 @@ const testdata = {
     userAccessToken: 'xoxp-7845719592723-7848341665476-8182548043665-060711dd19bf723d66b6e3b779dd822b',
     userId: 'U07QYA1KKE0',
     appId: 'A082C47GC01',
-    scopes: { botScopes: [Array], userScopes: [Array] },
     enterpriseId: null,
     isEnterpriseInstall: false,
     timestamp: 1735504807626

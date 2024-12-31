@@ -1,4 +1,4 @@
-const db = require("../db/models/index");
+const { db } = require("../db/models/index");
 
 
 interface SlackInstallationData {
@@ -51,7 +51,7 @@ const saveSlackInstallationInDb = async (installationData: SlackInstallationData
         teamName: installationData.teamName,
         operation: 'saveSlackInstallationInDb'
     };
-
+    
     try {
         await db.SlackInstallation.create({
             teamId: installationData.teamId,
