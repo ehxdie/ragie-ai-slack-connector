@@ -4,6 +4,7 @@ exports.slackOauthCallback = void 0;
 const axios = require("axios");
 const dotenv = require("dotenv");
 const saveSlackInstallation = require("../services/slackInstallationData");
+const debug = require('debug')('app:slackAuth');
 dotenv.config();
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
@@ -11,7 +12,7 @@ const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
 const slackOauthCallback = async (req, res) => {
     var _a;
     const { code } = req.query;
-    console.log(code);
+    debug('Auth code:', code);
     if (!code) {
         return res.status(400).send("Authorization code not found!");
     }
@@ -29,12 +30,12 @@ const slackOauthCallback = async (req, res) => {
         if (!data.ok) {
             return res.status(400).send(`Error from Slack: ${data.error}`);
         }
-        console.log(data);
+        debug('OAuth response data:', data);
         // Extract and use data
         const { access_token, team, authed_user } = data;
-        console.log(`Access Token: ${access_token}`);
-        console.log(`Team: ${team.name}`);
-        console.log(`Authed User: ${authed_user.id}`);
+        debug(`Access Token: ${access_token}`);
+        debug(`Team: ${team.name}`);
+        debug(`Authed User: ${authed_user.id}`);
         // Extract key information
         const installationData = {
             teamId: data.team.id,
@@ -49,7 +50,7 @@ const slackOauthCallback = async (req, res) => {
             timestamp: Date.now()
         };
         await saveSlackInstallation(installationData);
-        console.log(`Slack app installed for team ${data.team.name}`);
+        debug(`Slack app installed for team ${data.team.name}`);
         // Respond to the user or redirect them to a success page
         res.send(`
             <html>
@@ -66,7 +67,7 @@ const slackOauthCallback = async (req, res) => {
         `);
     }
     catch (error) {
-        console.error("Error exchanging code for token:", error.message);
+        debug('Error exchanging code for token:', error.message);
         res.status(500).send("Internal Server Error");
     }
 };

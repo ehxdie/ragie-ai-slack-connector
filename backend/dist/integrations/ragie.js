@@ -5,6 +5,7 @@ const { queries } = require("../services/queryService");
 const { addAnswer } = require("../services/answerService");
 const { SlackMessages } = require("./slack");
 const dotenv = require("dotenv");
+const debug = require('debug')('app:ragie');
 dotenv.config();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const apiKey = process.env.API_KEY;
@@ -18,7 +19,7 @@ async function uploadSlackMessagesToRagie(messages) {
         if (!Array.isArray(messages)) {
             throw new Error('Messages must be an array');
         }
-        console.log(messages);
+        debug(messages);
         // Create a structured document containing all messages
         const documentContent = {
             messages: messages.map(msg => ({
@@ -45,10 +46,10 @@ async function uploadSlackMessagesToRagie(messages) {
         if (!response.ok) {
             throw new Error(`Upload failed with status ${response.status}`);
         }
-        console.log(`Successfully uploaded ${messages.length} messages as a single document`);
+        debug(`Successfully uploaded ${messages.length} messages as a single document`);
     }
     catch (error) {
-        console.error("Error uploading messages:", error);
+        debug('Error uploading messages:', error);
         throw error;
     }
 }
@@ -56,9 +57,9 @@ async function uploadSlackMessagesToRagie(messages) {
  * Processes Slack messages and uploads them to Ragie.
  */
 async function processSlackMessages() {
-    console.log("Starting to process messages...");
+    debug('Starting to process messages...');
     await uploadSlackMessagesToRagie(SlackMessages);
-    console.log("Finished processing messages");
+    debug('Finished processing messages');
 }
 /**
  * Retrieves chunks based on the user's latest query.
@@ -83,7 +84,7 @@ async function retrieveChunks(query) {
         return chunkText.slice(0, 5).join(" ").slice(0, 1000);
     }
     catch (error) {
-        console.error("Error retrieving chunks:", error);
+        debug('Error retrieving chunks:', error);
         return "";
     }
 }
@@ -132,11 +133,11 @@ async function ragieIntegration() {
         const systemPrompt = generateSystemPrompt(chunkText);
         const chatCompletion = await getGroqChatCompletion(systemPrompt, latestQuery);
         const completionContent = ((_b = (_a = chatCompletion.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) || "";
-        console.log(completionContent);
+        debug('Generated completion:', completionContent);
         addAnswer(completionContent);
     }
     catch (error) {
-        console.error("Error during Ragie integration:", error);
+        debug('Error during Ragie integration:', error);
     }
 }
 module.exports = {

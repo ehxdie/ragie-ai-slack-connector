@@ -3,11 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { returnCurrentToken } = require('../services/slackInstallationData');
 const { WebClient } = require('@slack/web-api');
 const dotenv = require('dotenv');
+const debug = require('debug')('app:slack');
 dotenv.config();
 // Slack token 
 // const token: string | null = await returnCurrentToken();
 const token = process.env.SlACK_TOKEN;
-console.log(token);
+debug('Token:', token);
 if (!token) {
     throw new Error('SLACK_TOKEN is not defined.');
 }
@@ -30,11 +31,11 @@ async function getPublicChannels() {
                 name: channel.name,
             });
         });
-        console.log(`Total Public Channels Found: ${publicChannels.length}`);
+        debug(`Total Public Channels Found: ${publicChannels.length}`);
         return ChannelInformation;
     }
     catch (error) {
-        console.error('Error fetching public channels:', error);
+        debug('Error fetching public channels:', error);
         return [];
     }
 }
@@ -53,11 +54,11 @@ async function getMessagesFromChannel(channelId, channelName) {
                 channel: channelName
             }));
             SlackMessages.push(...channelMessages);
-            console.log(`Retrieved ${channelMessages.length} messages from #${channelName}`);
+            debug(`Retrieved ${channelMessages.length} messages from #${channelName}`);
         }
     }
     catch (error) {
-        console.error(`Error fetching messages from public channel #${channelName}:`, error);
+        debug(`Error fetching messages from public channel #${channelName}:`, error);
     }
 }
 // Main Slack integration function to get messages from public channels
@@ -71,12 +72,12 @@ async function slackIntegration() {
                 await getMessagesFromChannel(channel.id, channel.name);
             }
         }
-        console.log(`Total Messages Retrieved: ${SlackMessages.length}`);
-        console.log(SlackMessages);
+        debug(`Total Messages Retrieved: ${SlackMessages.length}`);
+        debug('Messages:', SlackMessages);
         return SlackMessages;
     }
     catch (error) {
-        console.error('Error in Slack integration:', error);
+        debug('Error in Slack integration:', error);
         return [];
     }
 }

@@ -8,6 +8,7 @@ const { returnCurrentToken, saveSlackInstallationInDb } = require('./services/sl
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const cors = require('cors');
+const debug = require('debug')('app:server');
 dotenv.config();
 const app = express();
 // Add CORS middleware
@@ -26,47 +27,42 @@ async function verifyTokenAvailability() {
         if (!token) {
             throw new Error('No valid Slack token found');
         }
-        console.log('Slack token verified successfully');
+        debug('Slack token verified successfully');
         return true;
     }
     catch (error) {
-        console.error('Token verification failed:', error);
+        debug('Token verification failed:', error);
         return false;
     }
 }
+// Polulate testdata to test the saveSlackInstallationInDb function
 const testdata = {
-    teamId: 'T07QVM5HEM9',
-    teamName: 'Buildr',
-    botUserId: 'U0821VBJY92',
-    botAccessToken: 'xoxb-7845719592723-8069997644308-G9LbKaQgKyTW6anTS2z4lehd',
-    userAccessToken: 'xoxp-7845719592723-7848341665476-8182548043665-060711dd19bf723d66b6e3b779dd822b',
-    userId: 'U07QYA1KKE0',
-    appId: 'A082C47GC01',
+    teamId: '',
+    teamName: '',
+    botUserId: '',
+    botAccessToken: '',
+    userAccessToken: '',
+    userId: '',
+    appId: '',
     enterpriseId: null,
     isEnterpriseInstall: false,
     timestamp: 1735504807626
 };
 // Start the server and run initialization functions
 app.listen(process.env.PORT, async () => {
-    console.log(`Listening on port ${process.env.PORT}...`);
+    debug(`Listening on port ${process.env.PORT}...`);
     try {
-        // Verify token availability first
-        // const isTokenAvailable = await verifyTokenAvailability();
-        // if (!isTokenAvailable) {
-        //     console.error('Cannot proceed with integrations due to token unavailability');
-        //     process.exit(1);
-        // }
         await saveSlackInstallationInDb(testdata);
         // Run Slack functionality
-        console.log('Initializing Slack integration...');
+        debug('Initializing Slack integration...');
         await slackIntegration();
         // Run Ragie functionality
-        console.log('Initializing Ragie integration...');
+        debug('Initializing Ragie integration...');
         await ragieIntegration();
-        console.log('All services initialized successfully.');
+        debug('All services initialized successfully.');
     }
     catch (error) {
-        console.error('Error during initialization:', error);
+        debug('Error during initialization:', error);
         process.exit(1); // Exit the process if critical initialization fails
     }
 });

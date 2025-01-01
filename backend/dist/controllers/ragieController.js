@@ -3,14 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const addQuery = require("../services/queryService");
 const getAnswers = require("../services/answerService");
 const ragieIntegration = require("../integrations/ragie");
+const debug = require('debug')('app:ragieController');
 const postQuery = async (req, res) => {
-    console.log(req.query);
+    debug('Query params:', req.query);
     const query = req.query.paramName;
     if (query) {
         addQuery(query);
-        // Dynamically trigger the answer generation
-        console.log(`Processing query: ${query}`);
-        // Automatically reruns 
+        debug(`Processing query: ${query}`);
         await ragieIntegration();
         res.status(200).json({ msg: query });
     }
