@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 const axios = require("axios");
 const dotenv = require("dotenv");
 const saveSlackInstallation = require("../services/slackInstallationData");
+const debug = require('debug')('app:slackAuth');
 dotenv.config();
 
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
@@ -12,7 +13,7 @@ const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
 export const slackOauthCallback = async (req: Request, res: Response) => {
 
     const { code } = req.query;
-    console.log(code);
+    debug('Auth code:', code);
 
     if (!code) {
         return res.status(400).send("Authorization code not found!");
@@ -35,12 +36,12 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             return res.status(400).send(`Error from Slack: ${data.error}`);
         }
 
-        console.log(data);
+        debug('OAuth response data:', data);
         // Extract and use data
         const { access_token, team, authed_user } = data;
-        console.log(`Access Token: ${access_token}`);
-        console.log(`Team: ${team.name}`);
-        console.log(`Authed User: ${authed_user.id}`);
+        debug(`Access Token: ${access_token}`);
+        debug(`Team: ${team.name}`);
+        debug(`Authed User: ${authed_user.id}`);
 
         // Extract key information
         const installationData = {
@@ -59,7 +60,7 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
 
 
         await saveSlackInstallation(installationData);
-        console.log(`Slack app installed for team ${data.team.name}`);
+        debug(`Slack app installed for team ${data.team.name}`);
 
         // Respond to the user or redirect them to a success page
         res.send(`
@@ -78,7 +79,7 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
 
 
     } catch (error: unknown) {
-        console.error("Error exchanging code for token:", (error as Error).message);
+        debug('Error exchanging code for token:', (error as Error).message);
         res.status(500).send("Internal Server Error");
     }
 };

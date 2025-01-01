@@ -1,5 +1,5 @@
 const { db } = require("../db/models/index");
-
+const debug = require('debug')('app:slackInstallationData');
 
 interface SlackInstallationData {
     teamId: string;
@@ -21,24 +21,23 @@ const installations: Record<string, SlackInstallationData> = {};
  * Save Slack installation data in memory.
  */
 const saveSlackInstallation = async (installationData: SlackInstallationData) => {
-    
+
     try {
         const teamId = installationData.teamId;
 
         // Add or update the installation data in memory
         installations[teamId] = { ...installationData, timestamp: Date.now() };
 
-        console.log(installations);
-        
-        
-        await saveSlackInstallationInDb(installationData)
-       
 
-        console.log(`Saved Slack installation for team in DB: ${installationData.teamName}`);
+        debug(`Saved Slack installation for team in memory: ${installationData.teamName}`);
+
+
+        await saveSlackInstallationInDb(installationData)
+
 
     } catch (error) {
 
-        console.error("Error saving installation data:", error);
+        debug("Failed to save installation for team", error);
         throw new Error(`Failed to save installation: ${error instanceof Error ? error.message : "Unknown error"}`);
 
     }
@@ -51,7 +50,7 @@ const saveSlackInstallationInDb = async (installationData: SlackInstallationData
         teamName: installationData.teamName,
         operation: 'saveSlackInstallationInDb'
     };
-    
+
     try {
         await db.SlackInstallation.create({
             teamId: installationData.teamId,
@@ -66,11 +65,11 @@ const saveSlackInstallationInDb = async (installationData: SlackInstallationData
             timestamp: installationData.timestamp,
         });
 
-        console.log({
+        debug({
             ...logContext,
             message: 'Successfully saved installation in database',
             duration: Date.now() - startTime
-        });
+        })
 
     } catch (error) {
         let errorMessage = 'Unknown database error';
@@ -99,7 +98,7 @@ const saveSlackInstallationInDb = async (installationData: SlackInstallationData
             duration: Date.now() - startTime
         };
 
-        console.error('Database save failed:', errorDetails);
+        debug('Database save failed:',errorDetails);
         throw new Error(`Database save failed: ${errorMessage}`);
     }
 };
@@ -121,7 +120,7 @@ const returnCurrentToken = (): string | null => {
 
     } catch (error) {
 
-        console.error("Error retrieving the latest botAccessToken:", error);
+        debug("Error retrieving the latest botAccessToken:", error);
         throw new Error(`Failed to retrieve botAccessToken: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
 };
