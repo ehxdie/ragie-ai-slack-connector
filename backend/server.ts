@@ -39,6 +39,7 @@ async function verifyTokenAvailability(): Promise<boolean> {
         return false;
     }
 }
+
 interface SlackInstallationData {
     teamId: string;
     teamName: string;
