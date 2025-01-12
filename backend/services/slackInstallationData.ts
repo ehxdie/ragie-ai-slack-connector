@@ -106,8 +106,7 @@ const saveSlackInstallationInDb = async (installationData: SlackInstallationData
 const returnCurrentToken = (): string | null => {
     try {
         if (Object.keys(installations).length === 0) {
-            console.log("No installations found.");
-            return null; // Return null if no installation data is available
+            debug("No installations found.");
         }
 
         // Find the installation with the latest timestamp

@@ -2,11 +2,13 @@ import { Request, Response } from 'express';
 const axios = require("axios");
 const dotenv = require("dotenv");
 const saveSlackInstallation = require("../services/slackInstallationData");
+const { generateToken } = require('../services/jwtService');
 const debug = require('debug')('app:slackAuth');
 dotenv.config();
 
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
+
 
 
 // Handle Slack OAuth callback
@@ -57,26 +59,36 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             timestamp: Date.now()
         };
 
-
-
         await saveSlackInstallation(installationData);
         debug(`Slack app installed for team ${data.team.name}`);
 
-        // Respond to the user or redirect them to a success page
+        // Generate JWT token after successful installation
+        const token = generateToken({
+            teamId: installationData.teamId,
+            userId: installationData.userId
+        });
+
+       // Send HTML response with localStorage script
         res.send(`
             <html>
                 <body>
                     <h1>Slack app successfully installed!</h1>
-                    <p>You will be redirected shortly...</p>
-                <script>
-                    setTimeout(() => {
-                    window.location.href = "http://localhost:5173/";
-                    }, 3000); // Redirect after 3 seconds
-                </script>
+                    <p>Storing credentials...</p>
+                    <script>
+                        try {
+                            localStorage.setItem('ragie_token', '${token}');
+                            console.log('Token stored successfully');
+                        } catch (error) {
+                            console.error('Failed to store token:', error);
+                        }
+                        
+                        setTimeout(() => {
+                            window.location.href = 'http://localhost:5173/';
+                        }, 2000);
+                    </script>
                 </body>
             </html>
         `);
-
 
     } catch (error: unknown) {
         debug('Error exchanging code for token:', (error as Error).message);
