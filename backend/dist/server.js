@@ -35,24 +35,11 @@ async function verifyTokenAvailability() {
         return false;
     }
 }
-// Polulate testdata to test the saveSlackInstallationInDb function
-const testdata = {
-    teamId: '',
-    teamName: '',
-    botUserId: '',
-    botAccessToken: '',
-    userAccessToken: '',
-    userId: '',
-    appId: '',
-    enterpriseId: null,
-    isEnterpriseInstall: false,
-    timestamp: 1735504807626
-};
 // Start the server and run initialization functions
 app.listen(process.env.PORT, async () => {
     debug(`Listening on port ${process.env.PORT}...`);
     try {
-        await saveSlackInstallationInDb(testdata);
+        await verifyTokenAvailability();
         // Run Slack functionality
         debug('Initializing Slack integration...');
         await slackIntegration();

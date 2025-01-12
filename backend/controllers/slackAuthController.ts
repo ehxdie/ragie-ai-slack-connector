@@ -68,6 +68,7 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             userId: installationData.userId
         });
 
+        
        // Send HTML response with localStorage script
         res.send(`
             <html>

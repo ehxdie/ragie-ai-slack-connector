@@ -9,11 +9,8 @@ router.get('/slack/install', async (req: Request, res: Response) => {
     await slackOauthCallback(req, res);
 });
 
-// Protected routes
+// Protected routes 
+router.post('/', authenticateToken, postQuery);
+router.get('/responses', authenticateToken,  getResponse);
 
-
-// New routes 
-router.post('/', authenticateToken, requireTeamAccess, postQuery);
-router.get('/responses', authenticateToken, requireTeamAccess, getResponse);
-
-module.exports = router;  // Changed from export default to module.exports
+module.exports = router;  

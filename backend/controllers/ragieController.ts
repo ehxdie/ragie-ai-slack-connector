@@ -1,10 +1,11 @@
-import  { Request, Response } from 'express';
+import  { Response } from 'express';
+import { IGetUserAuthInfoRequest } from '../services/database/slackInstallationService';
 const addQuery = require("../services/queryService");
 const getAnswers = require("../services/answerService");
 const ragieIntegration = require("../integrations/ragie");
 const debug = require('debug')('app:ragieController');
 
-const postQuery = async (req: Request, res: Response) => {
+const postQuery = async (req: IGetUserAuthInfoRequest, res: Response) => {
     debug('Query params:', req.query);
     const query = req.query.paramName as string;
     if (query) {
@@ -17,7 +18,7 @@ const postQuery = async (req: Request, res: Response) => {
     }
 };
 
-const getResponse = async (req: Request, res: Response) => {
+const getResponse = async (req: IGetUserAuthInfoRequest, res: Response) => {
     const answers = getAnswers();
     if (answers) {
         res.status(200).json({ response: answers });

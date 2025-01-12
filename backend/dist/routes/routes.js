@@ -3,10 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
 const { postQuery, getResponse } = require('../controllers/ragieController');
 const { slackOauthCallback } = require("../controllers/slackAuthController");
+const { authenticateToken, requireTeamAccess } = require('../middleware/authMiddleware');
 const router = express.Router();
-router.post('/', postQuery);
-router.get('/responses', getResponse);
+// Public routes
 router.get('/slack/install', async (req, res) => {
     await slackOauthCallback(req, res);
 });
-module.exports = router; // Changed from export default to module.exports
+// Protected routes 
+router.post('/', authenticateToken, postQuery);
+router.get('/responses', authenticateToken, getResponse);
+module.exports = router;
