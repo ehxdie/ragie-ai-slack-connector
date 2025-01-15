@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 const axios = require("axios");
 const dotenv = require("dotenv");
-const saveSlackInstallation = require("../services/slackInstallationData");
+const { createSlackInstallation } = require("../services/database/slackInstallationService")
+const { slackIntegration } = require("../integrations/slack");
 const { generateToken } = require('../services/jwtService');
 const debug = require('debug')('app:slackAuth');
 dotenv.config();
@@ -59,8 +60,18 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             timestamp: Date.now()
         };
 
-        await saveSlackInstallation(installationData);
-        debug(`Slack app installed for team ${data.team.name}`);
+        // Stores slack installation data to the data
+        try {
+
+             await createSlackInstallation(installationData);
+             debug(`Slack app installed for team ${data.team.name}`);
+
+        } catch (error) {
+
+            debug(`Slack installation failed for team ${data.team.name} error :${error}`)
+        }
+       
+        
 
         // Generate JWT token after successful installation
         const token = generateToken({
@@ -68,6 +79,14 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
             userId: installationData.userId
         });
 
+        // Handles slack integration, saving messages to the database 
+        try {
+            debug('Initializing Slack integration...');
+            await slackIntegration(installationData.userId);
+        } catch (error) {
+            debug(`Slack initiation error error :${error}`)
+        }
+        
         
        // Send HTML response with localStorage script
         res.send(`

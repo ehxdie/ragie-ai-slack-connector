@@ -17,7 +17,7 @@ interface SlackInstallationData {
 }
 
 export interface IGetUserAuthInfoRequest extends Request {
-    user: string // or any other type
+    userId: string // or any other type
 }
 
 /**

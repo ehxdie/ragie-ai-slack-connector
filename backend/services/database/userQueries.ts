@@ -75,6 +75,7 @@ const getUserQueryById = async (id: number) => {
  * @param {Partial<UserQueryData>} data - Data to update
  * @returns {Promise<object|null>} The updated UserQuery instance, or null if not found
  */
+
 const updateUserQuery = async (id: number, data: Partial<UserQueryData>) => {
     debug("Updating UserQuery with ID: %d and data: %O", id, data);
     try {

@@ -26,19 +26,19 @@ app.use(bodyParser.json());
 app.use('/api', Routes);
 
 // Function to verify token availability
-async function verifyTokenAvailability(): Promise<boolean> {
-    try {
-        const token = await returnCurrentToken();
-        if (!token) {
-            throw new Error('No valid Slack token found');
-        }
-        debug('Slack token verified successfully');
-        return true;
-    } catch (error) {
-        debug('Token verification failed:', error);
-        return false;
-    }
-}
+// async function verifyTokenAvailability(): Promise<boolean> {
+//     try {
+//         const token = await returnCurrentToken();
+//         if (!token) {
+//             throw new Error('No valid Slack token found');
+//         }
+//         debug('Slack token verified successfully');
+//         return true;
+//     } catch (error) {
+//         debug('Token verification failed:', error);
+//         return false;
+//     }
+// }
 
 
 
@@ -48,15 +48,6 @@ app.listen(process.env.PORT, async () => {
 
     try {
         
-        await verifyTokenAvailability();
-
-        // Run Slack functionality
-        debug('Initializing Slack integration...');
-        await slackIntegration();
-
-        // Run Ragie functionality
-        debug('Initializing Ragie integration...');
-        await ragieIntegration();
 
         debug('All services initialized successfully.');
     } catch (error) {

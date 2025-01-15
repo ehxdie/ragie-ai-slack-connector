@@ -2,6 +2,7 @@ const { returnCurrentToken } = require('../services/slackInstallationData');
 const { WebClient } = require('@slack/web-api');
 const dotenv = require('dotenv');
 const debug = require('debug')('app:slack');
+const { getSlackInstallations } = require('../services/slackInstallationData');
 
 dotenv.config();
 
@@ -19,26 +20,27 @@ interface SlackMessage {
     channel: string;
 }
 
-// Slack token 
-// const token: string | null = await returnCurrentToken();
-const token: string | undefined = process.env.SlACK_TOKEN;
-debug('Token:', token);
-
-if (!token) {
-    throw new Error('SLACK_TOKEN is not defined.');
+interface SlackInstallationData {
+    teamId: string;
+    teamName: string;
+    botUserId: string;
+    botAccessToken: string;
+    userAccessToken: string;
+    userId: string;
+    appId: string;
+    enterpriseId?: string | null;
+    isEnterpriseInstall: boolean;
+    timestamp: number;
 }
-
-// Initialize the Slack client
-const slackClient = new WebClient(token);
 
 // Store Slack messages
 const SlackMessages: SlackMessage[] = [];
 
 // Get public channels
-async function getPublicChannels(): Promise<SlackChannel[]> {
+async function getPublicChannels(slackClient: any): Promise<SlackChannel[]> {
     try {
         const result = await slackClient.conversations.list({
-            types: 'public_channel'
+            types: 'public_channel',
         });
 
         const publicChannels = result.channels || [];
@@ -62,19 +64,23 @@ async function getPublicChannels(): Promise<SlackChannel[]> {
 }
 
 // Get messages from a specific public channel
-async function getMessagesFromChannel(channelId: string, channelName: string): Promise<void> {
+async function getMessagesFromChannel(
+    slackClient: any,
+    channelId: string,
+    channelName: string
+): Promise<void> {
     try {
         const result = await slackClient.conversations.history({
             channel: channelId,
-            limit: 1000  // Retrieve up to 1000 messages
+            limit: 1000, // Retrieve up to 1000 messages
         });
 
         if (result.messages) {
-            const channelMessages = (result.messages as any[]).map(message => ({
+            const channelMessages = (result.messages as any[]).map((message) => ({
                 user: message.user,
                 text: message.text,
                 ts: message.ts,
-                channel: channelName
+                channel: channelName,
             }));
 
             SlackMessages.push(...channelMessages);
@@ -86,15 +92,25 @@ async function getMessagesFromChannel(channelId: string, channelName: string): P
 }
 
 // Main Slack integration function to get messages from public channels
-async function slackIntegration(): Promise<SlackMessage[]> {
+async function slackIntegration(userID: string): Promise<SlackMessage[]> {
     try {
+        // Getting the current token from the database
+        const user: SlackInstallationData = await getSlackInstallations({ userId: userID });
+
+        if (!user || !user.botAccessToken) {
+            throw new Error('User or token not found.');
+        }
+
+        // Initialize Slack client with the retrieved token
+        const slackClient = new WebClient(user.botAccessToken);
+
         // Get public channels
-        const ChannelInformation = await getPublicChannels();
+        const ChannelInformation = await getPublicChannels(slackClient);
 
         // Retrieve messages from each public channel
         for (const channel of ChannelInformation) {
             if (channel.id && channel.name) {
-                await getMessagesFromChannel(channel.id, channel.name);
+                await getMessagesFromChannel(slackClient, channel.id, channel.name);
             }
         }
 
@@ -109,5 +125,5 @@ async function slackIntegration(): Promise<SlackMessage[]> {
 
 module.exports = {
     SlackMessages,
-    slackIntegration
+    slackIntegration,
 };

@@ -1,7 +1,7 @@
 const Groq = require("groq-sdk");
 const { queries } = require("../services/queryService");
 const { addAnswer } = require("../services/answerService");
-const { SlackMessages }= require("./slack");
+const { SlackMessages } = require("./slack");
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
 
@@ -22,13 +22,14 @@ interface SlackMessage {
  * Uploads all Slack messages as a single document to Ragie.
  * @param messages - Array of Slack messages to upload.
  */
+
 async function uploadSlackMessagesToRagie(messages: SlackMessage[]): Promise<void> {
     try {
         // Validate messages is an array
         if (!Array.isArray(messages)) {
             throw new Error('Messages must be an array');
         }
-        
+
         debug(messages);
 
         // Create a structured document containing all messages
@@ -70,7 +71,8 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[]): Promise<voi
 
 /**
  * Processes Slack messages and uploads them to Ragie.
- */
+*/
+
 async function processSlackMessages(): Promise<void> {
     debug('Starting to process messages...');
     await uploadSlackMessagesToRagie(SlackMessages);
@@ -82,6 +84,7 @@ async function processSlackMessages(): Promise<void> {
  * @param query - The query string to retrieve chunks for.
  * @returns A formatted string containing retrieved chunks.
  */
+
 async function retrieveChunks(query: string): Promise<string> {
     try {
         const response = await fetch("https://api.ragie.ai/retrievals", {
@@ -113,6 +116,7 @@ async function retrieveChunks(query: string): Promise<string> {
  * @param chunkText - The text extracted from chunks.
  * @returns A formatted system prompt string.
  */
+
 function generateSystemPrompt(chunkText: string): string {
     return `You are "Ragie AI", a professional but friendly AI chatbot...
 Here is all the information:
@@ -128,6 +132,7 @@ END SYSTEM INSTRUCTIONS`;
  * @param userQuery - The user's query.
  * @returns The chat completion response.
  */
+
 async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
     return groq.chat.completions.create({
         messages: [
@@ -146,7 +151,8 @@ async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
 /**
  * Main function to handle the Ragie integration.
  */
-async function ragieIntegration() {
+
+async function ragieIntegration(userID: string): Promise<void> {
     try {
         await processSlackMessages();
         const latestQuery = queries[queries.length - 1]
