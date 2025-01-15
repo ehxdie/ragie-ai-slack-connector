@@ -24,16 +24,12 @@ app.use('/api', Routes);
 
 
 // Start the server and run initialization functions
-app.listen(process.env.PORT, async () => {
-    debug(`Listening on port ${process.env.PORT}...`);
-
-    try {
-        
-
-        debug('All services initialized successfully.');
-    } catch (error) {
-        debug('Error during initialization:', error);
-        process.exit(1); // Exit the process if critical initialization fails
+app.listen(process.env.PORT, (error: Error | null) => {
+    if (error) {
+        debug('Error during server startup:', error);
+        process.exit(1); // Exit the process if there's an error
+    } else {
+        debug(`Listening on port ${process.env.PORT}...`);
     }
 });
 

@@ -18,14 +18,13 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use('/api', Routes);
 // Start the server and run initialization functions
-app.listen(process.env.PORT, async () => {
-    debug(`Listening on port ${process.env.PORT}...`);
-    try {
-        debug('All services initialized successfully.');
+app.listen(process.env.PORT, (error) => {
+    if (error) {
+        debug('Error during server startup:', error);
+        process.exit(1); // Exit the process if there's an error
     }
-    catch (error) {
-        debug('Error during initialization:', error);
-        process.exit(1); // Exit the process if critical initialization fails
+    else {
+        debug(`Listening on port ${process.env.PORT}...`);
     }
 });
 module.exports = app;
