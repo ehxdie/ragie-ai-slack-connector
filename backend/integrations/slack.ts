@@ -1,8 +1,7 @@
-const { returnCurrentToken } = require('../services/slackInstallationData');
 const { WebClient } = require('@slack/web-api');
 const dotenv = require('dotenv');
 const debug = require('debug')('app:slack');
-const { getSlackInstallations } = require('../services/slackInstallationData');
+const { getSlackInstallations } = require('../services/database/slackInstallationService');
 
 dotenv.config();
 
