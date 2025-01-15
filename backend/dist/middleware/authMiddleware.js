@@ -14,9 +14,7 @@ const authenticateToken = (req, res, next) => {
     }
     // Add user info to request
     if (payload.userId) {
-        // Would call the user from the table using the user id,
-        // req.user = User model from the database
-        req.user = payload.userId;
+        req.userId = payload.userId;
     }
     next();
 };

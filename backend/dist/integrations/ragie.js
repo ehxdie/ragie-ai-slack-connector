@@ -55,7 +55,7 @@ async function uploadSlackMessagesToRagie(messages) {
 }
 /**
  * Processes Slack messages and uploads them to Ragie.
- */
+*/
 async function processSlackMessages() {
     debug('Starting to process messages...');
     await uploadSlackMessagesToRagie(SlackMessages);
@@ -124,7 +124,7 @@ async function getGroqChatCompletion(systemPrompt, userQuery) {
 /**
  * Main function to handle the Ragie integration.
  */
-async function ragieIntegration() {
+async function ragieIntegration(userID) {
     var _a, _b;
     try {
         await processSlackMessages();

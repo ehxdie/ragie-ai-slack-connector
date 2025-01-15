@@ -13,6 +13,6 @@ router.get('/slack/install', async (req: Request, res: Response) => {
 // Protected routes 
 router.post('/', authenticateToken, postQuery);
 router.get('/responses', authenticateToken,  getResponse);
-router.get('/slack/events', authenticateToken, slackEvents);
+router.post('/slack/events', authenticateToken, slackEvents);
 
 module.exports = router;  

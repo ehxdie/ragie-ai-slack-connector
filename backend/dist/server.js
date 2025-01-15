@@ -2,9 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
 const Routes = require('./routes/routes');
-const { slackIntegration } = require("./integrations/slack");
-const { ragieIntegration } = require('./integrations/ragie');
-const { returnCurrentToken, saveSlackInstallationInDb } = require('./services/slackInstallationData');
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const cors = require('cors');
@@ -20,32 +17,10 @@ app.use(cors({
 app.use(express.json());
 app.use(bodyParser.json());
 app.use('/api', Routes);
-// Function to verify token availability
-async function verifyTokenAvailability() {
-    try {
-        const token = await returnCurrentToken();
-        if (!token) {
-            throw new Error('No valid Slack token found');
-        }
-        debug('Slack token verified successfully');
-        return true;
-    }
-    catch (error) {
-        debug('Token verification failed:', error);
-        return false;
-    }
-}
 // Start the server and run initialization functions
 app.listen(process.env.PORT, async () => {
     debug(`Listening on port ${process.env.PORT}...`);
     try {
-        await verifyTokenAvailability();
-        // Run Slack functionality
-        debug('Initializing Slack integration...');
-        await slackIntegration();
-        // Run Ragie functionality
-        debug('Initializing Ragie integration...');
-        await ragieIntegration();
         debug('All services initialized successfully.');
     }
     catch (error) {
