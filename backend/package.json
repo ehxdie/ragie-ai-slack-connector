@@ -11,7 +11,7 @@
     "lint": "eslint '**/*.ts'",
     "lint:fix": "eslint '**/*.ts' --fix",
     "prepare": "husky",
-    "generate-jwt": "ts-node/esm scripts/generate-jwt-secret.ts"
+    "generate-jwt": "ts-node --esm scripts/generate-jwt-secret.ts"
   },
   "husky": {
     "hooks": {
@@ -41,7 +41,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.10.6",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.16.0",
@@ -54,7 +54,7 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.7.2",
+    "typescript": "^5.7.3",
     "typescript-eslint": "^8.18.0",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4"
