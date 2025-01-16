@@ -9,15 +9,20 @@ const Channel = db.Channel;
  * @returns {Promise<object>} The created Channel instance
  */
 const createChannel = async (channelData) => {
-    debug("Creating a channel with data: %O", channelData);
     try {
-        const channel = await Channel.create(channelData);
-        debug("Created channel: %O", channel);
+        const [channel, created] = await Channel.findOrCreate({
+            where: {
+                workspaceInstallationId: channelData.workspaceInstallationId,
+                channelName: channelData.channelName,
+            },
+            defaults: channelData,
+        });
+        debug(created ? 'Channel created' : 'Channel already exists', channel);
         return channel;
     }
     catch (error) {
-        debug("Error creating channel: %O", error);
-        throw new Error("Failed to create channel");
+        debug('Error creating channel:', error);
+        throw new Error('Failed to create channel');
     }
 };
 /**

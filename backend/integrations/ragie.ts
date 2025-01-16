@@ -2,6 +2,7 @@ const Groq = require("groq-sdk");
 const { queries } = require("../services/queryService");
 const { addAnswer } = require("../services/answerService");
 const { SlackMessages } = require("./slack");
+const { getSlackInstallations } = require('../services/database/slackInstallationService');
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
 
@@ -18,6 +19,19 @@ interface SlackMessage {
     channel: string;
 }
 
+interface SlackInstallationData {
+    id: string;
+    teamId: string;
+    teamName: string;
+    botUserId: string;
+    botAccessToken: string;
+    userAccessToken: string;
+    userId: string;
+    appId: string;
+    enterpriseId?: string | null;
+    isEnterpriseInstall: boolean;
+    timestamp: number;
+}
 /**
  * Uploads all Slack messages as a single document to Ragie.
  * @param messages - Array of Slack messages to upload.
@@ -154,6 +168,9 @@ async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
 
 async function ragieIntegration(userID: string): Promise<void> {
     try {
+        // Getting the current token from the database
+        const user: SlackInstallationData = await getSlackInstallations({ userId: userID });
+        
         await processSlackMessages();
         const latestQuery = queries[queries.length - 1]
         const chunkText = await retrieveChunks(latestQuery);

@@ -4,6 +4,7 @@ const Groq = require("groq-sdk");
 const { queries } = require("../services/queryService");
 const { addAnswer } = require("../services/answerService");
 const { SlackMessages } = require("./slack");
+const { getSlackInstallations } = require('../services/database/slackInstallationService');
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
 dotenv.config();
@@ -127,6 +128,8 @@ async function getGroqChatCompletion(systemPrompt, userQuery) {
 async function ragieIntegration(userID) {
     var _a, _b;
     try {
+        // Getting the current token from the database
+        const user = await getSlackInstallations({ userId: userID });
         await processSlackMessages();
         const latestQuery = queries[queries.length - 1];
         const chunkText = await retrieveChunks(latestQuery);
