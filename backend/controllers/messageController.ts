@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { IGetUserAuthInfoRequest } from '../services/database/slackInstallationService';
 const dotenv = require("dotenv");
 const debug = require('debug')('app:slackEvents');
-const { createMessage } = require('../services/database/messagesService');
+const { createMessage } = require('../services/database/messageService');
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
 const { getAllChannels } = require('../services/database/channelService');
 dotenv.config();
