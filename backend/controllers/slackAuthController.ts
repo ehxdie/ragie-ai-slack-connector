@@ -111,7 +111,7 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
         `);
 
     } catch (error: unknown) {
-        debug('Error exchanging code for token:', (error as Error).message);
+        debug('Error exchanging code for token:', error)
         res.status(500).send("Internal Server Error");
     }
 };
