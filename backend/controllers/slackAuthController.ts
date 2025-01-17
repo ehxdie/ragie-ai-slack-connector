@@ -74,11 +74,17 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
         
 
         // Generate JWT token after successful installation
-        const token = generateToken({
-            teamId: installationData.teamId,
-            userId: installationData.userId
-        });
-
+        let token;
+        try {
+            token = generateToken({
+                teamId: installationData.teamId,
+                userId: installationData.userId
+            });
+        } catch (error) {
+            debug('Error generating JWT token:', error);
+            return res.status(500).send("Failed to generate JWT token");
+        }
+        
         // Handles slack integration, saving messages to the database 
         try {
             debug('Initializing Slack integration...');
