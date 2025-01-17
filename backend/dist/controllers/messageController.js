@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.slackEvents = void 0;
 const dotenv = require("dotenv");
 const debug = require('debug')('app:slackEvents');
-const { createMessage } = require('../services/database/messagesService');
+const { createMessage } = require('../services/database/messageService');
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
 const { getAllChannels } = require('../services/database/channelService');
 dotenv.config();

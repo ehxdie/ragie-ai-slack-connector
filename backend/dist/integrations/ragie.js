@@ -5,6 +5,8 @@ const { queries } = require("../services/queryService");
 const { addAnswer } = require("../services/answerService");
 const { SlackMessages } = require("./slack");
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
+const { getMessages, updateMessage } = require("../services/database/messageService");
+const { createUserQuery } = require("../services/database/userQueryService");
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
 dotenv.config();
@@ -57,17 +59,48 @@ async function uploadSlackMessagesToRagie(messages) {
 /**
  * Processes Slack messages and uploads them to Ragie.
 */
-async function processSlackMessages() {
-    debug('Starting to process messages...');
-    await uploadSlackMessagesToRagie(SlackMessages);
-    debug('Finished processing messages');
+function convertToSlackMessage(dbMessage) {
+    return {
+        user: dbMessage.originalSenderId,
+        text: dbMessage.messageText,
+        ts: (dbMessage.timestamp / 1000).toString(), // Convert to seconds for Slack format
+        channel: dbMessage.channelId.toString()
+    };
+}
+async function processSlackMessages(user) {
+    debug(`Starting to process messages for user ${user.userId}...`);
+    try {
+        // Get all messages for this user from the database
+        const dbMessages = await getMessages({
+            originalSenderId: user.userId,
+            processedForRag: false // Only get messages not yet processed
+        });
+        if (!dbMessages || dbMessages.length === 0) {
+            debug(`No new messages found for user ${user.userId}`);
+            return;
+        }
+        // Convert database messages to SlackMessage format
+        const slackMessages = dbMessages.map(convertToSlackMessage);
+        // Get the IDs of processed messages
+        const processedMessageIds = dbMessages.map((msg) => msg.id);
+        // Upload messages to Ragie
+        await uploadSlackMessagesToRagie(slackMessages);
+        // Update messages as processed
+        await Promise.all(dbMessages.map((msg) => updateMessage(msg.id, { processedForRag: true })));
+        debug(`Finished processing ${slackMessages.length} messages for user ${user.userId}`);
+        return processedMessageIds;
+    }
+    catch (error) {
+        debug(`Error processing messages for user ${user.userId}:`, error);
+        throw error;
+    }
 }
 /**
  * Retrieves chunks based on the user's latest query.
  * @param query - The query string to retrieve chunks for.
  * @returns A formatted string containing retrieved chunks.
  */
-async function retrieveChunks(query) {
+async function retrieveChunks(query, userId) {
     try {
         const response = await fetch("https://api.ragie.ai/retrievals", {
             method: "POST",
@@ -75,7 +108,12 @@ async function retrieveChunks(query) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${apiKey}`,
             },
-            body: JSON.stringify({ query, filters: { scope: "tutorial" } }),
+            body: JSON.stringify({
+                query, filters: {
+                    scope: "tutorial",
+                    userId: userId
+                }
+            }),
         });
         if (!response.ok) {
             throw new Error(`Failed to retrieve data: ${response.status} ${response.statusText}`);
@@ -94,8 +132,8 @@ async function retrieveChunks(query) {
  * @param chunkText - The text extracted from chunks.
  * @returns A formatted system prompt string.
  */
-function generateSystemPrompt(chunkText) {
-    return `You are "Ragie AI", a professional but friendly AI chatbot...
+function generateSystemPrompt(chunkText, userId) {
+    return `You are "Ragie AI", a professional but friendly AI chatbot assisting user ${userId}...
 Here is all the information:
 ===
 ${chunkText}
@@ -130,12 +168,22 @@ async function ragieIntegration(userID) {
     try {
         // Getting the current token from the database
         const user = await getSlackInstallations({ userId: userID });
-        await processSlackMessages();
+        // Process messages and get their IDs
+        const processedMessageIds = await processSlackMessages(user);
         const latestQuery = queries[queries.length - 1];
-        const chunkText = await retrieveChunks(latestQuery);
-        const systemPrompt = generateSystemPrompt(chunkText);
+        const chunkText = await retrieveChunks(latestQuery, user.userId);
+        const systemPrompt = generateSystemPrompt(chunkText, user.userId);
         const chatCompletion = await getGroqChatCompletion(systemPrompt, latestQuery);
         const completionContent = ((_b = (_a = chatCompletion.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) || "";
+        // Store the query and response in the UserQueries database
+        await createUserQuery({
+            workspaceInstallationId: user.id,
+            userSlackId: user.userId,
+            queryText: latestQuery,
+            responseText: completionContent,
+            referencedMessageIds: processedMessageIds || [],
+            createdAt: new Date(),
+        });
         debug('Generated completion:', completionContent);
         addAnswer(completionContent);
     }
