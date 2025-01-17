@@ -1,4 +1,4 @@
-const { jwt } = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 import { Request } from 'express';
 const debug = require('debug')('app:jwt');
 
