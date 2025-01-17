@@ -4,7 +4,7 @@ const { addAnswer } = require("../services/answerService");
 const { SlackMessages } = require("./slack");
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
 const { getMessages, updateMessage } = require("../services/database/messageService");
-const { createUserQuery } = require("../services/database/userQueryService");
+const { createUserQuery } = require("../services/database/userQueries");
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
 
