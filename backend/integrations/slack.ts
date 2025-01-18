@@ -137,6 +137,7 @@ async function slackIntegration(userID: string): Promise<SlackMessage[]> {
         // Getting the current token from the database
         const user: SlackInstallationData = await getSlackInstallations({ userId: userID });
 
+        console.log(user);
         if (!user || !user.botAccessToken) {
             debug(`user: ${user}`);
             throw new Error('User or token not found.');
