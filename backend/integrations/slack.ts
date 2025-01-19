@@ -142,6 +142,7 @@ async function slackIntegration(userID: string): Promise<SlackMessage[]> {
         // If you want to work with the first installation:
         const user = userObject && userObject.length > 0 ? userObject[0].toJSON() : null;
 
+        debug(`User: ${JSON.stringify(user)}`);
         if (!user || !user.botAccessToken) {
             debug(`user: ${JSON.stringify(user)}`);
             throw new Error('User or token not found.');
