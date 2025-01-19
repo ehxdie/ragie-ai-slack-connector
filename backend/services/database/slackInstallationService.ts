@@ -27,8 +27,30 @@ export interface IGetUserAuthInfoRequest extends Request {
  */
 
 const createSlackInstallation = async (data: SlackInstallationData) => {
-    debug("Creating a new Slack installation with data: %O", data);
+    debug("Checking for existing Slack installation with unique data: %O", {
+        userId: data.userId,
+        teamId: data.teamId,
+        appId: data.appId,
+    });
+
     try {
+        // Check if a Slack installation with the same userId, teamId, and appId already exists
+        const existingInstallation = await SlackInstallation.findOne({
+            where: {
+                userId: data.userId,
+                teamId: data.teamId,
+                appId: data.appId,
+            },
+        });
+
+        if (existingInstallation) {
+            debug("Slack installation already exists: %O", existingInstallation);
+            // Optionally, you can return the existing record instead of throwing an error
+            return existingInstallation;
+        }
+
+        // Create a new Slack installation if no duplicate is found
+        debug("Creating a new Slack installation with data: %O", data);
         const installation = await SlackInstallation.create(data);
         debug("Created Slack installation: %O", installation);
         return installation;
@@ -37,6 +59,7 @@ const createSlackInstallation = async (data: SlackInstallationData) => {
         throw error;
     }
 };
+
 
 /**
  * Fetch all Slack installations or find by criteria.
