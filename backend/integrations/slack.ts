@@ -135,8 +135,10 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
 async function slackIntegration(userID: string): Promise<SlackMessage[]> {
     try {
         // Getting the current token from the database
-        const user: SlackInstallationData = await getSlackInstallations({ userId: userID });
+        const users = await getSlackInstallations({ userId: userID });
 
+        // Convert Sequelize instances to plain objects
+        const user = users ? users.toJSON() : null;
 
         if (!user || !user.botAccessToken) {
             debug(`user: ${user}`);
