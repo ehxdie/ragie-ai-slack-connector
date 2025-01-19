@@ -137,6 +137,7 @@ async function slackIntegration(userID: string): Promise<SlackMessage[]> {
         // Getting the current token from the database
         const users = await getSlackInstallations({ userId: userID });
 
+        debug(`All User: ${users}`);
         // Convert Sequelize instances to plain objects
         const user = users ? users.toJSON() : null;
 
