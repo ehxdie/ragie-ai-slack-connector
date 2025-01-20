@@ -4,6 +4,7 @@ const { WebClient } = require('@slack/web-api');
 const dotenv = require('dotenv');
 const debug = require('debug')('app:slack');
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
+const { getAllChannels } = require('../services/database/channelService');
 
 dotenv.config();
 
@@ -35,6 +36,13 @@ interface SlackInstallationData {
     timestamp: number;
 }
 
+interface Channel {
+    id: number;
+    slackInstallationId: number;
+    channelName: string;
+    createdAt: Date;
+}
+
 // Store Slack messages
 const SlackMessages: SlackMessage[] = [];
 
@@ -59,6 +67,7 @@ async function getPublicChannels(slackClient: any, user: SlackInstallationData):
                     // Save each channel to the ChannelInformation array 
                     ChannelInformation.push({
                         id: user.id,
+                        channelId: channel.id,
                         name: channel.name,
                     });
 
@@ -87,6 +96,9 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
 
     try {
 
+        const channel:Channel = getAllChannels({slackInstallationId: user.id, channelName: channelName});
+        debug(`Channel information ${channel}`);
+
         const result = await slackClient.conversations.history({
             channel: channelId,
             limit: 1000, // Retrieve up to 1000 messages
@@ -111,7 +123,7 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
                     try {
                         await createMessage({
                             slackInstallationId:user.id,
-                            channelId: parseInt(channelId, 10), // Adjust type if needed
+                            channelId: channel.id, // Adjust type if needed
                             originalSenderId: message.user,
                             messageText: message.text,
                             timestamp: parseFloat(message.ts),
@@ -157,8 +169,8 @@ async function slackIntegration(userID: string): Promise<SlackMessage[]> {
 
         // Retrieve messages from each public channel
         for (const channel of ChannelInformation) {
-            if (channel.id && channel.name) {
-                await getMessagesFromChannel(slackClient, channel.id, channel.name, user);
+            if (channel.channelId && channel.name) {
+                await getMessagesFromChannel(slackClient, channel.channelId, channel.name, user);
             }
         }
 
