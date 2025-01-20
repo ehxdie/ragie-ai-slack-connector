@@ -104,11 +104,14 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
     debug(`Starting to process messages for user ${user.userId}...`);
     try {
         // Get all messages for this user from the database
-        const dbMessages = await getMessages({
+        const dbMessagesObject = await getMessages({
             originalSenderId: user.userId,
             processedForRag: false  // Only get messages not yet processed
         });
 
+        const dbMessages = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON() : null;
+
+        
         if (!dbMessages || dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
             return;
@@ -218,7 +221,8 @@ async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
 async function ragieIntegration(userID: string): Promise<void> {
     try {
         // Getting the current token from the database
-        const user: SlackInstallationData = await getSlackInstallations({ userId: userID });
+        const userObject = await getSlackInstallations({ userId: userID });
+        const user: SlackInstallationData = userObject && userObject.length > 0 ? userObject[0].toJSON() : null;
         // Process messages and get their IDs
         const processedMessageIds = await processSlackMessages(user);
         const latestQuery = queries[queries.length - 1]

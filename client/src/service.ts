@@ -24,7 +24,13 @@ export async function sendAllMessages(chats: unknown) {
     // const responseData = await fetch('http://localhost:3000/api/responses');
 
     // Production
-    const responseData = await fetch('https://ragie-ai-slack-connector-9yhn.onrender.com/api/responses');
+    // Fetch response from the responses endpoint, passing token in Authorization header
+    const responseData = await fetch('https://ragie-ai-slack-connector-9yhn.onrender.com/api/responses', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}` // Add token to Authorization header for the GET request
+      }
+    });
 
     const data = await responseData.json();
     console.log(data);
