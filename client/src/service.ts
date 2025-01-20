@@ -5,10 +5,14 @@ export async function sendAllMessages(chats: unknown) {
   try {
 
     // Post user query to the endpoint   
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('ragie_token') ||
+      new URLSearchParams(window.location.search).get('token');
+
     if (!token) {
       throw new Error('Authentication token is missing. Please log in.');
     }
+    
+    console.log(token)
 
     // Post user query to the endpoint with Authorization header
     await fetch(`https://ragie-ai-slack-connector-9yhn.onrender.com/api?paramName=${encodeURIComponent(paramName)}`, {
