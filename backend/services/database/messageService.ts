@@ -33,7 +33,7 @@ const createMessage = async (data: MessageData) => {
             defaults: data,
         });
 
-        debug(created ? 'Message created' : 'Message already exists', message);
+        debug(created ? 'Message created' : 'Message already exists');
         return message;
     } catch (error) {
         debug("Error creating or finding Message: %O", error);
