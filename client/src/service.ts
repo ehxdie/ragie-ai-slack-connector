@@ -4,15 +4,20 @@ export async function sendAllMessages(chats: unknown) {
 
   try {
 
-    // Post user query to the endpoint   
-    const token = localStorage.getItem('ragie_token') ||
-      new URLSearchParams(window.location.search).get('token');
+    // Retrieve the token from localStorage or the URL query parameters
+    let token = localStorage.getItem('ragie_token');
 
     if (!token) {
-      throw new Error('Authentication token is missing. Please log in.');
+      token = new URLSearchParams(window.location.search).get('token');
+      if (token) {
+        // Store the token in localStorage for future use
+        localStorage.setItem('ragie_token', token);
+      } else {
+        throw new Error('Authentication token is missing. Please log in.');
+      }
     }
-    
-    console.log(token)
+
+    console.log('Using token:', token);
 
     // Post user query to the endpoint with Authorization header
     await fetch(`https://ragie-ai-slack-connector-9yhn.onrender.com/api?paramName=${encodeURIComponent(paramName)}`, {

@@ -111,7 +111,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
 
         const dbMessages = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON() : null;
 
-        
+        debug(`All dbmessages ${dbMessages}`);
         if (!dbMessages || dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
             return;
@@ -223,6 +223,7 @@ async function ragieIntegration(userID: string): Promise<void> {
         // Getting the current token from the database
         const userObject = await getSlackInstallations({ userId: userID });
         const user: SlackInstallationData = userObject && userObject.length > 0 ? userObject[0].toJSON() : null;
+
         // Process messages and get their IDs
         const processedMessageIds = await processSlackMessages(user);
         const latestQuery = queries[queries.length - 1]
