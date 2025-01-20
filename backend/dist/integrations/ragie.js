@@ -6,7 +6,7 @@ const { addAnswer } = require("../services/answerService");
 const { SlackMessages } = require("./slack");
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
 const { getMessages, updateMessage } = require("../services/database/messageService");
-const { createUserQuery } = require("../services/database/userQueryService");
+const { createUserQuery } = require("../services/database/userQueries");
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
 dotenv.config();
@@ -177,7 +177,7 @@ async function ragieIntegration(userID) {
         const completionContent = ((_b = (_a = chatCompletion.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) || "";
         // Store the query and response in the UserQueries database
         await createUserQuery({
-            workspaceInstallationId: user.id,
+            slackInstallationId: user.id,
             userSlackId: user.userId,
             queryText: latestQuery,
             responseText: completionContent,

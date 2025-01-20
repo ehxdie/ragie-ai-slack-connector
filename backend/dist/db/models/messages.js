@@ -5,7 +5,7 @@ module.exports = (sequelize) => {
     class Message extends sequelize_1.Model {
         static associate(models) {
             this.belongsTo(models.SlackInstallation, {
-                foreignKey: "workspaceInstallationId",
+                foreignKey: "slackInstallationId",
                 as: "slackInstallation",
             });
             this.belongsTo(models.Channel, {
@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        workspaceInstallationId: {
+        slackInstallationId: {
             type: sequelize_1.DataTypes.INTEGER,
             references: {
                 model: "slack_installations",

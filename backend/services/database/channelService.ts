@@ -3,7 +3,7 @@ const debug = require("debug")("app:channel-crud");
 const Channel = db.Channel;
 
 interface ChannelData {
-    workspaceInstallationId: number;
+    slackInstallationId: number;
     channelName: string;
 }
 
@@ -18,7 +18,7 @@ const createChannel = async (channelData: ChannelData) => {
     try {
         const [channel, created] = await Channel.findOrCreate({
             where: {
-                workspaceInstallationId: channelData.workspaceInstallationId,
+                slackInstallationId: channelData.slackInstallationId,
                 channelName: channelData.channelName,
             },
             defaults: channelData,

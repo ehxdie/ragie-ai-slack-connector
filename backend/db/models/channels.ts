@@ -4,7 +4,7 @@ import { Sequelize, Model, DataTypes, Association } from "sequelize";
 
 interface ChannelAttributes {
   id?: number;
-  workspaceInstallationId: number;
+  slackInstallationId: number;
   channelName: string;
   createdAt?: Date;
 }
@@ -14,7 +14,7 @@ interface ChannelCreationAttributes extends Omit<ChannelAttributes, "id" | "crea
 module.exports = (sequelize: Sequelize) => {
   class Channel extends Model<ChannelAttributes, ChannelCreationAttributes> implements ChannelAttributes {
     public id!: number;
-    public workspaceInstallationId!: number;
+    public slackInstallationId!: number;
     public channelName!: string;
     public createdAt!: Date;
 
@@ -25,7 +25,7 @@ module.exports = (sequelize: Sequelize) => {
 
     static associate(models: any) {
       this.belongsTo(models.SlackInstallation, {
-        foreignKey: "workspaceInstallationId",
+        foreignKey: "slackInstallationId",
         as: "slackInstallation",
       });
       this.hasMany(models.Message, {
@@ -42,7 +42,7 @@ module.exports = (sequelize: Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      workspaceInstallationId: {
+      slackInstallationId: {
         type: DataTypes.INTEGER,
         references: {
           model: "slack_installations",

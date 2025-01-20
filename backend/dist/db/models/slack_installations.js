@@ -6,15 +6,15 @@ module.exports = (sequelize) => {
         static associate(models) {
             // Define associations here
             this.hasMany(models.Channel, {
-                foreignKey: "workspaceInstallationId",
+                foreignKey: "slackInstallationId",
                 as: "channels",
             });
             this.hasMany(models.Message, {
-                foreignKey: "workspaceInstallationId",
+                foreignKey: "slackInstallationId",
                 as: "messages",
             });
             this.hasMany(models.UserQuery, {
-                foreignKey: "workspaceInstallationId",
+                foreignKey: "slackInstallationId",
                 as: "userQueries",
             });
         }

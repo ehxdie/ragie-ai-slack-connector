@@ -3,7 +3,7 @@ const debug = require("debug")("message:crud"); // Debug namespace
 const Message = db.Message;
 
 interface MessageData {
-    workspaceInstallationId: number;
+    slackInstallationId: number;
     channelId: number;
     originalSenderId: string;
     messageText: string;

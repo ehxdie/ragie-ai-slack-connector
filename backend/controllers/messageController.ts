@@ -25,7 +25,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
 
             debug(`New message in channel ${channel}: ${text}`);
 
-            let workspaceInstallationId: number | undefined;
+            let slackInstallationId: number | undefined;
 
             try {
                 // Fetch the workspace installation data using the team_id
@@ -35,9 +35,9 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
                     return res.status(404).json({ error: 'Workspace installation not found' });
                 }
 
-                workspaceInstallationId = workspace.id;
+                slackInstallationId = workspace.id;
 
-                // Proceed with the rest of the logic using workspaceInstallationId
+                // Proceed with the rest of the logic using slackInstallationId
             } catch (error) {
                 console.error('Error fetching workspace installation:', error);
                 return res.status(500).json({ error: 'Internal server error while fetching workspace installation' });
@@ -47,7 +47,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
 
             try {
                 // Fetch the channel data using the channel ID
-                const channelData = await getAllChannels({ workspaceInstallationId });
+                const channelData = await getAllChannels({ slackInstallationId: slackInstallationId });
 
                 if (!channelData) {
                     return res.status(404).json({ error: 'Channel data not found' });
@@ -62,7 +62,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
 
             // Save the message to the database
             await createMessage({
-                workspaceInstallationId,
+                slackInstallationId: slackInstallationId,
                 channelDataId,
                 originalSenderId: user,
                 messageText: text || '',

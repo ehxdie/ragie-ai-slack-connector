@@ -19,15 +19,15 @@ const slackEvents = async (req, res) => {
         if (type === 'event_callback' && event.type === 'message') {
             const { channel, user, text, ts } = event;
             debug(`New message in channel ${channel}: ${text}`);
-            let workspaceInstallationId;
+            let slackInstallationId;
             try {
                 // Fetch the workspace installation data using the team_id
                 const workspace = await getSlackInstallations({ userId: userID });
                 if (!workspace) {
                     return res.status(404).json({ error: 'Workspace installation not found' });
                 }
-                workspaceInstallationId = workspace.id;
-                // Proceed with the rest of the logic using workspaceInstallationId
+                slackInstallationId = workspace.id;
+                // Proceed with the rest of the logic using slackInstallationId
             }
             catch (error) {
                 console.error('Error fetching workspace installation:', error);
@@ -36,7 +36,7 @@ const slackEvents = async (req, res) => {
             let channelDataId;
             try {
                 // Fetch the channel data using the channel ID
-                const channelData = await getAllChannels({ workspaceInstallationId });
+                const channelData = await getAllChannels({ slackInstallationId: slackInstallationId });
                 if (!channelData) {
                     return res.status(404).json({ error: 'Channel data not found' });
                 }
@@ -48,7 +48,7 @@ const slackEvents = async (req, res) => {
             }
             // Save the message to the database
             await createMessage({
-                workspaceInstallationId,
+                slackInstallationId: slackInstallationId,
                 channelDataId,
                 originalSenderId: user,
                 messageText: text || '',

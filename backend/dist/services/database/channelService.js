@@ -12,7 +12,7 @@ const createChannel = async (channelData) => {
     try {
         const [channel, created] = await Channel.findOrCreate({
             where: {
-                workspaceInstallationId: channelData.workspaceInstallationId,
+                slackInstallationId: channelData.slackInstallationId,
                 channelName: channelData.channelName,
             },
             defaults: channelData,

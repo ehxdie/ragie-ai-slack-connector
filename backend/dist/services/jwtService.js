@@ -1,7 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractTokenFromRequest = exports.verifyToken = exports.generateToken = void 0;
-const { jwt } = require('jsonwebtoken');
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const debug = require('debug')('app:jwt');
 // Load and validate JWT configuration
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -15,12 +18,12 @@ if (JWT_SECRET.length < 32) {
 }
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const generateToken = (payload) => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    return jsonwebtoken_1.default.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 exports.generateToken = generateToken;
 const verifyToken = (token) => {
     try {
-        return jwt.verify(token, JWT_SECRET);
+        return jsonwebtoken_1.default.verify(token, JWT_SECRET);
     }
     catch (error) {
         debug('Token verification failed:', error);

@@ -28,7 +28,7 @@ async function getPublicChannels(slackClient, user) {
                     });
                     // Save each channel to the database
                     await createChannel({
-                        workspaceInstallationId: user.id,
+                        slackInstallationId: user.id,
                         channelName: channel.name,
                     });
                     debug(`Channel saved to DB: ${channel.name}`);
@@ -67,7 +67,7 @@ async function getMessagesFromChannel(slackClient, channelId, channelName, user)
                     // Save message to the database
                     try {
                         await createMessage({
-                            workspaceInstallationId: user.id,
+                            slackInstallationId: user.id,
                             channelId: parseInt(channelId, 10), // Adjust type if needed
                             originalSenderId: message.user,
                             messageText: message.text,
@@ -92,8 +92,13 @@ async function getMessagesFromChannel(slackClient, channelId, channelName, user)
 async function slackIntegration(userID) {
     try {
         // Getting the current token from the database
-        const user = await getSlackInstallations({ userId: userID });
+        const userObject = await getSlackInstallations({ userId: userID });
+        debug(`All User: ${userObject}`);
+        // If you want to work with the first installation:
+        const user = userObject && userObject.length > 0 ? userObject[0].toJSON() : null;
+        debug(`User: ${JSON.stringify(user)}`);
         if (!user || !user.botAccessToken) {
+            debug(`user: ${JSON.stringify(user)}`);
             throw new Error('User or token not found.');
         }
         // Initialize Slack client with the retrieved token

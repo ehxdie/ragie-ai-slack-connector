@@ -64,7 +64,7 @@ async function getPublicChannels(slackClient: any, user: SlackInstallationData):
 
                     // Save each channel to the database
                     await createChannel({
-                        workspaceInstallationId: user.id, 
+                        slackInstallationId: user.id, 
                         channelName: channel.name,
                     });
                     debug(`Channel saved to DB: ${channel.name}`);
@@ -110,7 +110,7 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
                     // Save message to the database
                     try {
                         await createMessage({
-                            workspaceInstallationId:user.id,
+                            slackInstallationId:user.id,
                             channelId: parseInt(channelId, 10), // Adjust type if needed
                             originalSenderId: message.user,
                             messageText: message.text,

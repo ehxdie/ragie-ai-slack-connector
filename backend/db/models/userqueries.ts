@@ -3,7 +3,7 @@ import { Sequelize, Model, DataTypes, Association } from "sequelize";
 
 interface UserQueryAttributes {
   id?: number;
-  workspaceInstallationId: number;
+  slackInstallationId: number;
   userSlackId: string;
   queryText: string;
   responseText: string;
@@ -16,7 +16,7 @@ interface UserQueryCreationAttributes extends Omit<UserQueryAttributes, "id" | "
 module.exports = (sequelize: Sequelize) => {
   class UserQuery extends Model<UserQueryAttributes, UserQueryCreationAttributes> implements UserQueryAttributes {
     public id!: number;
-    public workspaceInstallationId!: number;
+    public slackInstallationId!: number;
     public userSlackId!: string;
     public queryText!: string;
     public responseText!: string;
@@ -29,7 +29,7 @@ module.exports = (sequelize: Sequelize) => {
 
     static associate(models: any) {
       this.belongsTo(models.SlackInstallation, {
-        foreignKey: "workspaceInstallationId",
+        foreignKey: "slackInstallationId",
         as: "slackInstallation",
       });
     }
@@ -42,7 +42,7 @@ module.exports = (sequelize: Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      workspaceInstallationId: {
+      slackInstallationId: {
         type: DataTypes.INTEGER,
         references: {
           model: "slack_installations",

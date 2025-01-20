@@ -3,7 +3,7 @@ const debug = require("debug")("userquery:crud"); // Debug namespace
 const UserQuery = db.UserQuery;
 
 interface UserQueryData {
-    workspaceInstallationId: number;
+    slackInstallationId: number;
     userSlackId: string;
     queryText: string;
     responseText: string;

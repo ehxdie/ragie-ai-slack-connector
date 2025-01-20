@@ -229,7 +229,7 @@ async function ragieIntegration(userID: string): Promise<void> {
 
         // Store the query and response in the UserQueries database
         await createUserQuery({
-            workspaceInstallationId: user.id,
+            slackInstallationId: user.id,
             userSlackId: user.userId,
             queryText: latestQuery,
             responseText: completionContent,

@@ -3,7 +3,7 @@ import { Sequelize, Model, DataTypes, Association } from "sequelize";
 
 interface MessageAttributes {
   id?: number;
-  workspaceInstallationId: number;
+  slackInstallationId: number;
   channelId: number;
   originalSenderId: string;
   messageText: string;
@@ -18,7 +18,7 @@ interface MessageCreationAttributes extends Omit<MessageAttributes, 'id' | 'crea
 module.exports = (sequelize: Sequelize) => {
   class Message extends Model<MessageAttributes, MessageCreationAttributes> implements MessageAttributes {
     public id!: number;
-    public workspaceInstallationId!: number;
+    public slackInstallationId!: number;
     public channelId!: number;
     public originalSenderId!: string;
     public messageText!: string;
@@ -34,7 +34,7 @@ module.exports = (sequelize: Sequelize) => {
 
     static associate(models: any) {
       this.belongsTo(models.SlackInstallation, {
-        foreignKey: "workspaceInstallationId",
+        foreignKey: "slackInstallationId",
         as: "slackInstallation",
       });
       this.belongsTo(models.Channel, {
@@ -51,7 +51,7 @@ module.exports = (sequelize: Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      workspaceInstallationId: {
+      slackInstallationId: {
         type: DataTypes.INTEGER,
         references: {
           model: "slack_installations",
