@@ -37,6 +37,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
 
                 slackInstallationId = workspace.id;
 
+                
                 // Proceed with the rest of the logic using slackInstallationId
             } catch (error) {
                 console.error('Error fetching workspace installation:', error);
