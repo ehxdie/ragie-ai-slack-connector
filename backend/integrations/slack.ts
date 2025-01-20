@@ -96,7 +96,7 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
 
     try {
 
-        const channel:Channel = getAllChannels({slackInstallationId: user.id, channelName: channelName});
+        const channel:Channel = await getAllChannels({slackInstallationId: user.id, channelName: channelName});
         debug(`Channel information ${channel}`);
 
         const result = await slackClient.conversations.history({
