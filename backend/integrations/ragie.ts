@@ -141,6 +141,8 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
 
         // Convert database messages to SlackMessage format
         const slackMessages: SlackMessage[] = [];
+
+
         for (const dbMessage of dbMessages) {
             slackMessages.push(convertToSlackMessage(dbMessage));
         }
@@ -151,6 +153,8 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
             processedMessageIds.push(msg.id);
         }
 
+        debug(`slack messages ${slackMessages}`);
+        
         // Upload messages to Ragie
         await uploadSlackMessagesToRagie(slackMessages);
 

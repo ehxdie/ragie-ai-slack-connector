@@ -85,7 +85,7 @@ async function processSlackMessages(user) {
             // If it's a single object, wrap it in an array
             dbMessages = [dbMessagesObject.toJSON()];
         }
-        debug(`All dbmessages ${JSON.stringify(dbMessages)}`);
+        debug(`All dbmessages ${dbMessages}`);
         if (dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
             return;
