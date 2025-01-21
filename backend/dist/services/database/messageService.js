@@ -9,15 +9,24 @@ const Message = db.Message;
  * @returns {Promise<object>} The created Message instance
  */
 const createMessage = async (data) => {
-    debug("Creating a new Message with data: %O", data);
+    debug("Creating or finding Message with data: %O", data);
     try {
-        const message = await Message.create(data);
-        debug("Created Message: %O", message);
+        // Check for existing message with same timestamp, user, and channel
+        const [message, created] = await Message.findOrCreate({
+            where: {
+                slackInstallationId: data.slackInstallationId,
+                channelId: data.channelId,
+                originalSenderId: data.originalSenderId,
+                timestamp: data.messageText, // Adjust this field based on what makes a message unique
+            },
+            defaults: data,
+        });
+        debug(created ? 'Message created' : 'Message already exists');
         return message;
     }
     catch (error) {
-        debug("Error creating Message: %O", error);
-        throw error;
+        debug("Error creating or finding Message: %O", error);
+        throw new Error('Failed to create or find message');
     }
 };
 /**

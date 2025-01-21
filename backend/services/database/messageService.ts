@@ -28,7 +28,8 @@ const createMessage = async (data: MessageData) => {
                 slackInstallationId: data.slackInstallationId,
                 channelId: data.channelId,
                 originalSenderId: data.originalSenderId,
-                timestamp: data.messageText, // Adjust this field based on what makes a message unique
+                messageText: data.messageText,
+                timestamp: data.timestamp, // Adjust this field based on what makes a message unique
             },
             defaults: data,
         });

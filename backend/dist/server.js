@@ -10,9 +10,9 @@ dotenv.config();
 const app = express();
 // Add CORS middleware
 app.use(cors({
-    origin: ['http://localhost:5173'], // Allowed frontend origin(s)
-    methods: ['GET', 'POST'], // Allowed HTTP methods
-    credentials: true, // Include credentials if necessary
+    origin: 'http://localhost:5173', // Frontend origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+    credentials: true, // Include credentials if needed (e.g., cookies, auth)
 }));
 app.use(express.json());
 app.use(bodyParser.json());

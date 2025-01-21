@@ -81,25 +81,32 @@ const slackOauthCallback = async (req, res) => {
         }
         // Send HTML response with localStorage script
         res.send(`
-            <html>
-                <body>
-                    <h1>Slack app successfully installed!</h1>
-                    <p>Storing credentials...</p>
-                    <script>
-                        try {
-                            localStorage.setItem('ragie_token', '${token}');
-                            console.log('Token stored successfully');
-                        } catch (error) {
-                            console.error('Failed to store token:', error);
-                        }
-                        
-                        setTimeout(() => {
-                            window.location.href = 'http://localhost:5173/';
-                        }, 2000);
-                    </script>
-                </body>
-            </html>
-        `);
+    <html>
+        <body>
+            <h1>Slack app successfully installed!</h1>
+            <p>Storing credentials...</p>
+            <script>
+                try {
+                    // Store the token
+                    localStorage.setItem('ragie_token', '${token}');
+                    console.log('Token stored successfully');
+                    
+                    // Also store in sessionStorage as backup
+                    sessionStorage.setItem('ragie_token', '${token}');
+                    
+                    // Add a flag to indicate fresh installation
+                    localStorage.setItem('fresh_install', 'true');
+                    
+                    window.location.href = 'http://localhost:5173/?token=${token}';
+                } catch (error) {
+                    console.error('Failed to store token:', error);
+                    // Redirect with error parameter
+                    window.location.href = 'http://localhost:5173/error?message=token_storage_failed';
+                }
+            </script>
+        </body>
+    </html>
+`);
     }
     catch (error) {
         debug('Error exchanging code for token:', error);
