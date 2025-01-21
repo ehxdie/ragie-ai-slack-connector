@@ -132,7 +132,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
             dbMessages = [dbMessagesObject.toJSON()];
         }
 
-        debug(`All dbmessages ${JSON.stringify(dbMessages)}`);
+        debug(`All dbmessages ${dbMessages}`);
 
         if (dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
