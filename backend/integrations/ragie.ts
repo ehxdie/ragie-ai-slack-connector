@@ -172,6 +172,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
             slackInstallationId: user.id,
             processedForRag: false
         });
+        debug(` dbMessagesObject ${dbMessagesObject} `);
 
         // Check if dbMessagesObject is an array or a single object
         let dbMessages: MessageData[] = [];
