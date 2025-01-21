@@ -35,6 +35,18 @@ interface SlackInstallationData {
     timestamp: number;
 }
 
+interface MessageData {
+    id: string;
+    slackInstallationId: number;
+    channelId: number;
+    originalSenderId: string;
+    messageText: string;
+    timestamp: number;
+    kafkaOffset: number;
+    processedForRag: boolean;
+    createdAt?: Date;
+}
+
 /**
  * Uploads all Slack messages as a single document to Ragie.
  * @param messages - Array of Slack messages to upload.
@@ -109,11 +121,12 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
             processedForRag: false  // Only get messages not yet processed
         });
 
-        const dbMessages = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON() : null;
+        debug(`dbMessageObject ${dbMessagesObject}`)
+        const dbMessages: MessageData  = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON() : null;
 
         debug(`All dbmessages ${dbMessages}`);
 
-        if (!dbMessages || dbMessages.length === 0) {
+        if (!dbMessages) {
             debug(`No new messages found for user ${user.userId}`);
             return;
         }
