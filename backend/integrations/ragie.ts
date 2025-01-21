@@ -106,7 +106,7 @@ function convertToSlackMessage(dbMessage: any): SlackMessage {
     return {
         user: dbMessage.originalSenderId,
         text: dbMessage.messageText,
-        ts: (dbMessage.timestamp / 1000).toString(), // Convert to seconds for Slack format
+        ts: dbMessage.timestamp.toString(), // Convert to seconds for Slack format
         channel: dbMessage.channelId.toString()
     };
 }
@@ -121,30 +121,43 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
             processedForRag: false  // Only get messages not yet processed
         });
 
-        debug(`dbMessageObject ${dbMessagesObject}`)
-        const dbMessages: MessageData  = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON() : null;
+        // Check if dbMessagesObject is an array or a single object
+        let dbMessages: MessageData[] = [];
 
-        debug(`All dbmessages ${dbMessages}`);
+        if (Array.isArray(dbMessagesObject)) {
+            // If it's an array, map over it to extract MessageData objects
+            dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
+        } else if (dbMessagesObject) {
+            // If it's a single object, wrap it in an array
+            dbMessages = [dbMessagesObject.toJSON()];
+        }
 
-        if (!dbMessages) {
+        debug(`All dbmessages ${JSON.stringify(dbMessages)}`);
+
+        if (dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
             return;
         }
 
         // Convert database messages to SlackMessage format
-        const slackMessages = dbMessages.map(convertToSlackMessage);
-
+        const slackMessages: SlackMessage[] = [];
+        for (const dbMessage of dbMessages) {
+            slackMessages.push(convertToSlackMessage(dbMessage));
+        }
 
         // Get the IDs of processed messages
-        const processedMessageIds: string[] = dbMessages.map((msg: { id: string }) => msg.id);
+        const processedMessageIds: string[] = [];
+        for (const msg of dbMessages) {
+            processedMessageIds.push(msg.id);
+        }
 
         // Upload messages to Ragie
         await uploadSlackMessagesToRagie(slackMessages);
 
         // Update messages as processed
-        await Promise.all(dbMessages.map((msg: { id: string }) =>
-            updateMessage(msg.id, { processedForRag: true })
-        ));
+        for (const msg of dbMessages) {
+            await updateMessage(msg.id, { processedForRag: true });
+        }
 
         debug(`Finished processing ${slackMessages.length} messages for user ${user.userId}`);
 
@@ -154,6 +167,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
         throw error;
     }
 }
+
 
 /**
  * Retrieves chunks based on the user's latest query.
