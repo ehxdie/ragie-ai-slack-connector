@@ -7,13 +7,16 @@ const { getMessages, updateMessage } = require("../services/database/messageServ
 const { createUserQuery } = require("../services/database/userQueries");
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
-
+const pLimit = require('p-limit');
 
 dotenv.config();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const apiKey = process.env.API_KEY;
+const BATCH_SIZE = 100;
+const limit = pLimit(5);
 
+// Interfaces
 interface SlackMessage {
     user: string;
     text: string;
@@ -47,140 +50,168 @@ interface MessageData {
     createdAt?: Date;
 }
 
-/**
- * Uploads all Slack messages as a single document to Ragie.
- * @param messages - Array of Slack messages to upload.
- */
+interface RagieDocument {
+    document_id: string;
+    document_type: string;
+    document_source: string;
+    document_name: string;
+    document_uploaded_at: number;
+}
 
-async function uploadSlackMessagesToRagie(messages: SlackMessage[]): Promise<void> {
-    try {
-        // Validate messages is an array
-        if (!Array.isArray(messages)) {
-            throw new Error('Messages must be an array');
+interface RagieChunk {
+    text: string;
+    score: number;
+}
+
+// Utility functions
+async function retryWithBackoff<T>(
+    operation: () => Promise<T>,
+    maxRetries = 3,
+    initialDelay = 1000
+): Promise<T> {
+    let lastError;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await operation();
+        } catch (error) {
+            lastError = error;
+            const delay = initialDelay * Math.pow(2, i);
+            debug(`Retry ${i + 1}/${maxRetries} after ${delay}ms`);
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
+    }
+    throw lastError;
+}
 
-        debug(messages);
+function validateMessageText(text: string): string {
+    if (!text) return "";
+    return text
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/javascript:/gi, '')
+        .trim();
+}
 
-        // Create a structured document containing all messages
+function convertToSlackMessage(dbMessage: MessageData): SlackMessage {
+    return {
+        user: dbMessage.originalSenderId,
+        text: validateMessageText(dbMessage.messageText),
+        ts: dbMessage.timestamp.toString(),
+        channel: dbMessage.channelId.toString()
+    };
+}
+
+// Document management
+async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: string): Promise<void> {
+    try {
+        const documentName = `slack_messages_${userId}.json`;
+
+        // Get existing documents
+        const existingDoc = await retryWithBackoff(async () => {
+            const response = await fetch("https://api.ragie.ai/documents", {
+                headers: {
+                    authorization: `Bearer ${apiKey}`,
+                    accept: "application/json",
+                }
+            });
+            if (!response.ok) throw new Error(`Failed to fetch documents: ${response.status}`);
+            const docs: RagieDocument[] = await response.json();
+            return docs.find(doc => doc.document_name === documentName);
+        });
+
         const documentContent = {
             messages: messages.map(msg => ({
                 timestamp: msg.ts,
                 user: msg.user,
                 channel: msg.channel,
-                content: msg.text
+                content: validateMessageText(msg.text)
             })),
-            totalMessages: messages.length,
-            channels: [...new Set(messages.map(msg => msg.channel))],
-            users: [...new Set(messages.map(msg => msg.user))]
+            metadata: {
+                owner_id: userId,
+                last_updated: new Date().toISOString(),
+                total_messages: messages.length,
+                channels: [...new Set(messages.map(msg => msg.channel))],
+                users: [...new Set(messages.map(msg => msg.user))]
+            }
         };
 
         const formData = new FormData();
         const blob = new Blob([JSON.stringify(documentContent)], { type: "application/json" });
-        formData.append("file", blob, "slack_messages.json");
+        formData.append("file", blob, documentName);
 
-        const response = await fetch("https://api.ragie.ai/documents", {
-            method: "POST",
-            headers: {
-                authorization: `Bearer ${apiKey}`,
-                accept: "application/json",
-            },
-            body: formData,
+        const url = existingDoc
+            ? `https://api.ragie.ai/documents/${existingDoc.document_id}`
+            : "https://api.ragie.ai/documents";
+
+        await retryWithBackoff(async () => {
+            const response = await fetch(url, {
+                method: existingDoc ? "PUT" : "POST",
+                headers: {
+                    authorization: `Bearer ${apiKey}`,
+                    accept: "application/json",
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Upload failed with status ${response.status}`);
+            }
         });
 
-        if (!response.ok) {
-            throw new Error(`Upload failed with status ${response.status}`);
-        }
-
-        debug(`Successfully uploaded ${messages.length} messages as a single document`);
+        debug(`Successfully ${existingDoc ? 'updated' : 'created'} document for user ${userId} with ${messages.length} messages`);
     } catch (error) {
-        debug('Error uploading messages:', error);
+        debug('Error uploading messages:', JSON.stringify(error, null, 2));
         throw error;
     }
 }
 
-/**
- * Processes Slack messages and uploads them to Ragie.
-*/
-
-function convertToSlackMessage(dbMessage: any): SlackMessage {
-    return {
-        user: dbMessage.originalSenderId,
-        text: dbMessage.messageText,
-        ts: dbMessage.timestamp.toString(), // Convert to seconds for Slack format
-        channel: dbMessage.channelId.toString()
-    };
-}
-
-
-async function processSlackMessages(user: SlackInstallationData): Promise<string[] | void> {
+// Message processing
+async function processSlackMessages(user: SlackInstallationData): Promise<string[]> {
     debug(`Starting to process messages for user ${user.userId}...`);
     try {
-        // Get all messages for this user from the database
         const dbMessagesObject = await getMessages({
             slackInstallationId: user.id,
-            processedForRag: false  // Only get messages not yet processed
+            processedForRag: false
         });
 
-        // Check if dbMessagesObject is an array or a single object
-        let dbMessages: MessageData[] = [];
-
-        if (Array.isArray(dbMessagesObject)) {
-            // If it's an array, map over it to extract MessageData objects
-            dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
-        } else if (dbMessagesObject) {
-            // If it's a single object, wrap it in an array
-            dbMessages = [dbMessagesObject.toJSON()];
-        }
-
-        debug(`All dbmessages ${dbMessages}`);
+        const dbMessages = Array.isArray(dbMessagesObject)
+            ? dbMessagesObject.map(msg => msg.toJSON())
+            : dbMessagesObject ? [dbMessagesObject.toJSON()] : [];
 
         if (dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
-            return;
+            return [];
         }
 
-        // Convert database messages to SlackMessage format
-        const slackMessages: SlackMessage[] = [];
-
-
-        for (const dbMessage of dbMessages) {
-            slackMessages.push(convertToSlackMessage(dbMessage));
+        const batches = [];
+        for (let i = 0; i < dbMessages.length; i += BATCH_SIZE) {
+            batches.push(dbMessages.slice(i, i + BATCH_SIZE));
         }
 
-        // Get the IDs of processed messages
         const processedMessageIds: string[] = [];
-        for (const msg of dbMessages) {
-            processedMessageIds.push(msg.id);
-        }
 
-        debug(`slack messages ${slackMessages}`);
-        
-        // Upload messages to Ragie
-        await uploadSlackMessagesToRagie(slackMessages);
+        await Promise.all(batches.map(async batch => {
+            const slackMessages = batch.map(msg => convertToSlackMessage(msg));
 
-        // Update messages as processed
-        for (const msg of dbMessages) {
-            await updateMessage(msg.id, { processedForRag: true });
-        }
+            await limit(async () => {
+                await uploadSlackMessagesToRagie(slackMessages, user.userId);
+                await Promise.all(batch.map(msg =>
+                    updateMessage(msg.id, { processedForRag: true })
+                ));
+                processedMessageIds.push(...batch.map(msg => msg.id));
+            });
+        }));
 
-        debug(`Finished processing ${slackMessages.length} messages for user ${user.userId}`);
-
+        debug(`Finished processing ${dbMessages.length} messages for user ${user.userId}`);
         return processedMessageIds;
     } catch (error) {
-        debug(`Error processing messages for user ${user.userId}:`, error);
+        debug('Error processing messages:', JSON.stringify(error, null, 2));
         throw error;
     }
 }
 
-
-/**
- * Retrieves chunks based on the user's latest query.
- * @param query - The query string to retrieve chunks for.
- * @returns A formatted string containing retrieved chunks.
- */
-
+// Retrieval
 async function retrieveChunks(query: string, userId: string): Promise<string> {
-    try {
+    return retryWithBackoff(async () => {
         const response = await fetch("https://api.ragie.ai/retrievals", {
             method: "POST",
             headers: {
@@ -188,96 +219,89 @@ async function retrieveChunks(query: string, userId: string): Promise<string> {
                 Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                query, filters: {
-                    scope: "tutorial",
-                    userId: userId
-                } }),
+                query,
+                filters: {
+                    document_name: `slack_messages_${userId}.json`,
+                    scope: "tutorial"
+                }
+            }),
         });
 
         if (!response.ok) {
-            throw new Error(
-                `Failed to retrieve data: ${response.status} ${response.statusText}`
-            );
+            throw new Error(`Failed to retrieve data: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        const chunkText = data.scored_chunks.map((chunk: any) => chunk.text);
-        return chunkText.slice(0, 5).join(" ").slice(0, 1000);
-    } catch (error) {
-        debug('Error retrieving chunks:', error);
-        return "";
-    }
-}
-
-/**
- * Generates the system prompt using retrieved chunks.
- * @param chunkText - The text extracted from chunks.
- * @returns A formatted system prompt string.
- */
-
-function generateSystemPrompt(chunkText: string, userId: string): string {
-    return `You are "Ragie AI", a professional but friendly AI chatbot assisting user ${userId}...
-Here is all the information:
-===
-${chunkText}
-===
-END SYSTEM INSTRUCTIONS`;
-}
-
-/**
- * Sends a chat completion request to the Groq API.
- * @param systemPrompt - The system prompt to guide the AI.
- * @param userQuery - The user's query.
- * @returns The chat completion response.
- */
-
-async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
-    return groq.chat.completions.create({
-        messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userQuery },
-        ],
-        model: "llama3-8b-8192",
-        temperature: 0.5,
-        max_tokens: 256,
-        top_p: 1,
-        stop: null,
-        stream: false,
+        return data.scored_chunks
+            .slice(0, 5)
+            .map((chunk: RagieChunk) => chunk.text)
+            .join(" ")
+            .slice(0, 1000);
     });
 }
 
-/**
- * Main function to handle the Ragie integration.
- */
+function generateSystemPrompt(chunkText: string, userId: string): string {
+    return `You are "Ragie AI", a professional but friendly AI chatbot assisting user ${userId}.
+Your responses should be based on the context provided below.
+Here is the relevant context:
+===
+${chunkText}
+===
+END CONTEXT`;
+}
 
+async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
+    return retryWithBackoff(() =>
+        groq.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userQuery },
+            ],
+            model: "llama3-8b-8192",
+            temperature: 0.5,
+            max_tokens: 256,
+            top_p: 1,
+            stop: null,
+            stream: false,
+        })
+    );
+}
+
+// Main integration
 async function ragieIntegration(userID: string): Promise<void> {
     try {
-        // Getting the current token from the database
         const userObject = await getSlackInstallations({ userId: userID });
-        const user: SlackInstallationData = userObject && userObject.length > 0 ? userObject[0].toJSON() : null;
+        if (!userObject?.length) {
+            throw new Error(`No installation found for user ${userID}`);
+        }
 
-        // Process messages and get their IDs
+        const user = userObject[0].toJSON();
         const processedMessageIds = await processSlackMessages(user);
-        const latestQuery = queries[queries.length - 1]
+        const latestQuery = queries[queries.length - 1];
+
+        if (!latestQuery?.trim()) {
+            throw new Error('No valid query found');
+        }
+
         const chunkText = await retrieveChunks(latestQuery, user.userId);
         const systemPrompt = generateSystemPrompt(chunkText, user.userId);
-        const chatCompletion = await getGroqChatCompletion(systemPrompt, latestQuery);
+        const chatCompletion:any = await getGroqChatCompletion(systemPrompt, latestQuery);
         const completionContent = chatCompletion.choices[0]?.message?.content || "";
 
-        // Store the query and response in the UserQueries database
         await createUserQuery({
             slackInstallationId: user.id,
             userSlackId: user.userId,
             queryText: latestQuery,
             responseText: completionContent,
-            referencedMessageIds: processedMessageIds || [],
+            referencedMessageIds: processedMessageIds,
             createdAt: new Date(),
         });
 
         debug('Generated completion:', completionContent);
         addAnswer(completionContent);
     } catch (error) {
-        debug('Error during Ragie integration:', error);
+        debug('Error during Ragie integration:', JSON.stringify(error, null, 2));
+        throw error;
     }
 }
 
