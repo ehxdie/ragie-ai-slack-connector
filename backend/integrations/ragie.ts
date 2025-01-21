@@ -173,9 +173,18 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
             processedForRag: false
         });
 
-        const dbMessages = Array.isArray(dbMessagesObject)
-            ? dbMessagesObject.map(msg => msg.toJSON())
-            : dbMessagesObject ? [dbMessagesObject.toJSON()] : [];
+        // Check if dbMessagesObject is an array or a single object
+        let dbMessages: MessageData[] = [];
+
+        if (Array.isArray(dbMessagesObject)) {
+            // If it's an array, map over it to extract MessageData objects
+            dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
+        } else if (dbMessagesObject) {
+            // If it's a single object, wrap it in an array
+            dbMessages = [dbMessagesObject.toJSON()];
+        }
+
+        debug(`All dbmessages ${dbMessages}`);
 
         if (dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
