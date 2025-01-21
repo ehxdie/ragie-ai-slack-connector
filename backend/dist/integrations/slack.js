@@ -56,7 +56,7 @@ async function getMessagesFromChannel(slackClient, channelId, channelName, user)
         debug(`Channel information ${channel}`);
         const result = await slackClient.conversations.history({
             channel: channelId,
-            limit: 10, // Retrieve up to 1000 messages
+            limit: 3, // Retrieve up to 1000 messages
         });
         if (result.messages) {
             const channelMessages = result.messages.map((message) => ({
