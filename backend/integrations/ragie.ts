@@ -105,7 +105,7 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
     try {
         const documentName = `slack_messages_${userId}.json`;
 
-        // Get existing documents
+        // Get existing documents with error handling for response format
         const existingDoc = await retryWithBackoff(async () => {
             const response = await fetch("https://api.ragie.ai/documents", {
                 headers: {
@@ -113,9 +113,12 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
                     accept: "application/json",
                 }
             });
+            debug(`ragie response:${response}`);
             if (!response.ok) throw new Error(`Failed to fetch documents: ${response.status}`);
-            const docs: RagieDocument[] = await response.json();
-            return docs.find(doc => doc.document_name === documentName);
+            const data = await response.json();
+            // Handle both array and object response formats
+            const docs = Array.isArray(data) ? data : data.documents || [];
+            return docs.find(doc => doc?.document_name === documentName);
         });
 
         const documentContent = {
@@ -153,17 +156,21 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
             });
 
             if (!response.ok) {
-                throw new Error(`Upload failed with status ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`Upload failed with status ${response.status}: ${errorText}`);
             }
+
+            // Log success response
+            const responseData = await response.json();
+            debug('Upload response:', JSON.stringify(responseData, null, 2));
         });
 
         debug(`Successfully ${existingDoc ? 'updated' : 'created'} document for user ${userId} with ${messages.length} messages`);
     } catch (error) {
-        debug('Error uploading messages:', JSON.stringify(error, null, 2));
+        debug('Error uploading messages:', error instanceof Error ? error.stack : JSON.stringify(error, null, 2));
         throw error;
     }
 }
-
 // Message processing
 async function processSlackMessages(user: SlackInstallationData): Promise<string[]> {
     debug(`Starting to process messages for user ${user.userId}...`);
@@ -174,15 +181,18 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
         });
         debug(` dbMessagesObject ${dbMessagesObject} `);
 
-        // Check if dbMessagesObject is an array or a single object
+        // Handle various response formats
         let dbMessages: MessageData[] = [];
-
         if (Array.isArray(dbMessagesObject)) {
-            // If it's an array, map over it to extract MessageData objects
-            dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
-        } else if (dbMessagesObject) {
-            // If it's a single object, wrap it in an array
-            dbMessages = [dbMessagesObject.toJSON()];
+            dbMessages = dbMessagesObject.map(message =>
+                typeof message.toJSON === 'function' ? message.toJSON() : message
+            );
+        } else if (dbMessagesObject && typeof dbMessagesObject === 'object') {
+            if (typeof dbMessagesObject.toJSON === 'function') {
+                dbMessages = [dbMessagesObject.toJSON()];
+            } else {
+                dbMessages = [dbMessagesObject as MessageData];
+            }
         }
 
         debug(`All dbmessages ${dbMessages}`);
