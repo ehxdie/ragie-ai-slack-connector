@@ -105,14 +105,14 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
     try {
         // Get all messages for this user from the database
         const dbMessagesObject = await getMessages({
-            originalSenderId: user.userId,
+            slackInstallationId: user.id,
             processedForRag: false  // Only get messages not yet processed
         });
 
         const dbMessages = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON() : null;
 
         debug(`All dbmessages ${dbMessages}`);
-        
+
         if (!dbMessages || dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
             return;
