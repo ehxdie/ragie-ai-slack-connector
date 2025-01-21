@@ -118,7 +118,8 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
             const data = await response.json();
             // Handle both array and object response formats
             const docs = Array.isArray(data) ? data : data.documents || [];
-            return docs.find(doc => doc?.document_name === documentName);
+            return docs.find((doc :any) => doc?.document_name === documentName);
+
         });
 
         const documentContent = {
