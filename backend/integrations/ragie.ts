@@ -116,6 +116,7 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
             debug(`ragie response:${response}`);
             if (!response.ok) throw new Error(`Failed to fetch documents: ${response.status}`);
             const data = await response.json();
+            debug(`ragie response in json format ${data}`);
             // Handle both array and object response formats
             const docs = Array.isArray(data) ? data : data.documents || [];
             return docs.find((doc :any) => doc?.document_name === documentName);
@@ -137,7 +138,7 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
                 users: [...new Set(messages.map(msg => msg.user))]
             }
         };
-
+        debug(`documentContent: ${documentContent}`);
         const formData = new FormData();
         const blob = new Blob([JSON.stringify(documentContent)], { type: "application/json" });
         formData.append("file", blob, documentName);
@@ -212,7 +213,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
 
         await Promise.all(batches.map(async batch => {
             const slackMessages = batch.map(msg => convertToSlackMessage(msg));
-
+            debug(`slack messages ${slackMessages}`);
             await limit(async () => {
                 await uploadSlackMessagesToRagie(slackMessages, user.userId);
                 await Promise.all(batch.map(msg =>
