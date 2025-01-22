@@ -185,17 +185,26 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
 
         // Handle various response formats
         let dbMessages: MessageData[] = [];
+        
         if (Array.isArray(dbMessagesObject)) {
-            dbMessages = dbMessagesObject.map(message =>
-                typeof message.toJSON === 'function' ? message.toJSON() : message
-            );
-        } else if (dbMessagesObject && typeof dbMessagesObject === 'object') {
-            if (typeof dbMessagesObject.toJSON === 'function') {
-                dbMessages = [dbMessagesObject.toJSON()];
-            } else {
-                dbMessages = [dbMessagesObject as MessageData];
-            }
+            // If it's an array, map over it to extract MessageData objects
+            dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
+        } else if (dbMessagesObject) {
+            // If it's a single object, wrap it in an array
+            dbMessages = [dbMessagesObject.toJSON()];
         }
+
+        // if (Array.isArray(dbMessagesObject)) {
+        //     dbMessages = dbMessagesObject.map(message =>
+        //         typeof message.toJSON === 'function' ? message.toJSON() : message
+        //     );
+        // } else if (dbMessagesObject && typeof dbMessagesObject === 'object') {
+        //     if (typeof dbMessagesObject.toJSON === 'function') {
+        //         dbMessages = [dbMessagesObject.toJSON()];
+        //     } else {
+        //         dbMessages = [dbMessagesObject as MessageData];
+        //     }
+        // }
 
         debug(`All dbmessages ${dbMessages}`);
 
