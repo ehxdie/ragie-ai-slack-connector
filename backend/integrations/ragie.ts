@@ -185,7 +185,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
 
         // Handle various response formats
         let dbMessages: MessageData[] = [];
-        
+
         if (Array.isArray(dbMessagesObject)) {
             // If it's an array, map over it to extract MessageData objects
             dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
@@ -290,7 +290,7 @@ async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
             ],
             model: "llama3-8b-8192",
             temperature: 0.5,
-            max_tokens: 256,
+            max_tokens: 1024,
             top_p: 1,
             stop: null,
             stream: false,
