@@ -181,9 +181,6 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
         // Handle various response formats
         let dbMessages: MessageData[] = [];
 
-        let dbMessage: MessageData = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON():null;
-        debug(`dbMessage ${dbMessage}`);
-        
         if (Array.isArray(dbMessagesObject)) {
             // If it's an array, map over it to extract MessageData objects
             dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
@@ -192,19 +189,27 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
             dbMessages = [dbMessagesObject.toJSON()];
         }
 
-        // if (Array.isArray(dbMessagesObject)) {
-        //     dbMessages = dbMessagesObject.map(message =>
-        //         typeof message.toJSON === 'function' ? message.toJSON() : message
-        //     );
-        // } else if (dbMessagesObject && typeof dbMessagesObject === 'object') {
-        //     if (typeof dbMessagesObject.toJSON === 'function') {
-        //         dbMessages = [dbMessagesObject.toJSON()];
-        //     } else {
-        //         dbMessages = [dbMessagesObject as MessageData];
-        //     }
-        // }
-       
         debug(`All dbmessages ${dbMessages}`);
+
+        let dbMessage1:MessageData = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON():null;
+        debug(`dbMessage1${dbMessage1}`);
+        
+        let dbMessages2:MessageData[] = [];
+
+        if (Array.isArray(dbMessagesObject)) {
+            dbMessages2= dbMessagesObject.map(message =>
+                typeof message.toJSON === 'function' ? message.toJSON() : message
+            );
+        } else if (dbMessagesObject && typeof dbMessagesObject === 'object') {
+            if (typeof dbMessagesObject.toJSON === 'function') {
+                dbMessages2= [dbMessagesObject.toJSON()];
+            } else {
+                dbMessages2= [dbMessagesObject as MessageData];
+            }
+        }
+       
+        debug(`dbMessages2 ${dbMessages2}`);
+       
 
         if (dbMessages.length === 0) {
             debug(`No new messages found for user ${user.userId}`);
