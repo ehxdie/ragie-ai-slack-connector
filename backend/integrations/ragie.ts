@@ -205,7 +205,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
         //         dbMessages = [dbMessagesObject as MessageData];
         //     }
         // }
-
+        console.log(`All dbmessages ${dbMessages}`);
         debug(`All dbmessages ${dbMessages}`);
 
         if (dbMessages.length === 0) {
