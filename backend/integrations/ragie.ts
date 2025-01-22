@@ -83,18 +83,12 @@ async function retryWithBackoff<T>(
     throw lastError;
 }
 
-function validateMessageText(text: string): string {
-    if (!text) return "";
-    return text
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/javascript:/gi, '')
-        .trim();
-}
+
 
 function convertToSlackMessage(dbMessage: MessageData): SlackMessage {
     return {
         user: dbMessage.originalSenderId,
-        text: validateMessageText(dbMessage.messageText),
+        text: dbMessage.messageText,
         ts: dbMessage.timestamp.toString(),
         channel: dbMessage.channelId.toString()
     };
@@ -128,7 +122,7 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
                 timestamp: msg.ts,
                 user: msg.user,
                 channel: msg.channel,
-                content: validateMessageText(msg.text)
+                content: msg.text
             })),
             metadata: {
                 owner_id: userId,
