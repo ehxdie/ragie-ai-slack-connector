@@ -177,9 +177,13 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
         });
         debug(` dbMessagesObject ${dbMessagesObject} `);
 
+
         // Handle various response formats
         let dbMessages: MessageData[] = [];
 
+        let dbMessage: MessageData = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON():null;
+        debug(`dbMessage ${dbMessage}`);
+        
         if (Array.isArray(dbMessagesObject)) {
             // If it's an array, map over it to extract MessageData objects
             dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
@@ -199,7 +203,7 @@ async function processSlackMessages(user: SlackInstallationData): Promise<string
         //         dbMessages = [dbMessagesObject as MessageData];
         //     }
         // }
-        console.log(`All dbmessages ${dbMessages}`);
+       
         debug(`All dbmessages ${dbMessages}`);
 
         if (dbMessages.length === 0) {
