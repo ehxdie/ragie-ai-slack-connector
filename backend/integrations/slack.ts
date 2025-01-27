@@ -84,6 +84,8 @@ async function getPublicChannels(slackClient: any, user: SlackInstallationData):
     }
 }
 
+const messagesByUser: Map<string, SlackMessage[]> = new Map();
+
 async function getMessagesFromChannel(slackClient: any, channelId: string, channelName: string, user: SlackInstallationData) {
     try {
         const channelObject = await getAllChannels({ slackInstallationId: user.id, channelName: channelName });
@@ -102,9 +104,14 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
                 channel: channelName,
             }));
 
+            // Add messages to the map instead of uploading immediately
+            if (!messagesByUser.has(user.userId)) {
+                messagesByUser.set(user.userId, []);
+            }
+            messagesByUser.get(user.userId)?.push(...channelMessages);
             SlackMessages.push(...channelMessages);
 
-            // Save messages to database
+            // Save to database
             for (const message of result.messages) {
                 if (message.user && message.text && message.ts) {
                     try {
@@ -115,20 +122,13 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
                             messageText: message.text,
                             timestamp: parseFloat(message.ts),
                             kafkaOffset: 0,
-                            processedForRag: true, // Set to true since we're uploading immediately
+                            processedForRag: true,
                         });
+                        debug(`Message saved to DB: ${message.text}`);
                     } catch (error) {
                         debug(`Failed to save message "${message.text}" to DB:`, error);
                     }
                 }
-            }
-
-            // Upload messages to Ragie using the new function
-            try {
-                await uploadMessagesToRagie(channelMessages, user.userId);
-                debug(`Uploaded messages from #${channelName} to Ragie.`);
-            } catch (error) {
-                debug('Error uploading messages to Ragie:', error);
             }
         }
     } catch (error) {
@@ -139,21 +139,41 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
 async function slackIntegration(userID: string): Promise<SlackMessage[]> {
     try {
         const userObject = await getSlackInstallations({ userId: userID });
+        debug(`All User: ${userObject}`);
+
         const user = userObject && userObject.length > 0 ? userObject[0].toJSON() : null;
+        debug(`User: ${JSON.stringify(user)}`);
 
         if (!user || !user.botAccessToken) {
+            debug(`user: ${JSON.stringify(user)}`);
             throw new Error('User or token not found.');
         }
 
         const slackClient = new WebClient(user.botAccessToken);
         const ChannelInformation = await getPublicChannels(slackClient, user);
 
+        // Clear any existing messages for this user
+        messagesByUser.delete(user.userId);
+
+        // Fetch messages from all channels
         for (const channel of ChannelInformation) {
             if (channel.channelId && channel.name) {
                 await getMessagesFromChannel(slackClient, channel.channelId, channel.name, user);
             }
         }
 
+        // Upload all messages for this user at once
+        const userMessages = messagesByUser.get(user.userId) || [];
+        if (userMessages.length > 0) {
+            try {
+                await uploadMessagesToRagie(userMessages, user.userId);
+                debug(`Uploaded ${userMessages.length} messages to Ragie for user ${user.userId}`);
+            } catch (error) {
+                debug('Error uploading messages to Ragie:', error);
+            }
+        }
+
+        debug(`Total Messages Retrieved: ${SlackMessages.length}`);
         return SlackMessages;
     } catch (error) {
         debug('Error in Slack integration:', error);
