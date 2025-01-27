@@ -7,40 +7,34 @@ const dotenv = require('dotenv');
 const debug = require('debug')('app:slack');
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
 const { getAllChannels } = require('../services/database/channelService');
+const { uploadMessagesToRagie } = require('../integrations/ragie');
 dotenv.config();
-// Store Slack messages
 const SlackMessages = [];
-// Get public channels
 async function getPublicChannels(slackClient, user) {
     try {
         const result = await slackClient.conversations.list({
             types: 'public_channel',
         });
         const publicChannels = result.channels || [];
-        // Array to store channel id and channel name
         const ChannelInformation = [];
         for (const channel of publicChannels) {
             if (channel.id && channel.name) {
                 try {
-                    // Save each channel to the ChannelInformation array 
                     ChannelInformation.push({
                         id: user.id,
                         channelId: channel.id,
                         name: channel.name,
                     });
-                    // Save each channel to the database
                     await createChannel({
                         slackInstallationId: user.id,
                         channelName: channel.name,
                     });
-                    debug(`Channel saved to DB: ${channel.name}`);
                 }
                 catch (error) {
                     debug(`Failed to save channel ${channel.name} to DB:`, error);
                 }
             }
         }
-        debug(`Total Public Channels Found: ${publicChannels.length}`);
         return ChannelInformation;
     }
     catch (error) {
@@ -48,15 +42,15 @@ async function getPublicChannels(slackClient, user) {
         return [];
     }
 }
-// Get messages from a specific public channel
+const messagesByUser = new Map();
 async function getMessagesFromChannel(slackClient, channelId, channelName, user) {
+    var _a;
     try {
         const channelObject = await getAllChannels({ slackInstallationId: user.id, channelName: channelName });
         const channel = channelObject && channelObject.length > 0 ? channelObject[0].toJSON() : null;
-        debug(`Channel information ${channel}`);
         const result = await slackClient.conversations.history({
             channel: channelId,
-            limit: 3, // Retrieve up to 1000 messages
+            limit: 10,
         });
         if (result.messages) {
             const channelMessages = result.messages.map((message) => ({
@@ -65,20 +59,24 @@ async function getMessagesFromChannel(slackClient, channelId, channelName, user)
                 ts: message.ts,
                 channel: channelName,
             }));
+            // Add messages to the map instead of uploading immediately
+            if (!messagesByUser.has(user.userId)) {
+                messagesByUser.set(user.userId, []);
+            }
+            (_a = messagesByUser.get(user.userId)) === null || _a === void 0 ? void 0 : _a.push(...channelMessages);
             SlackMessages.push(...channelMessages);
-            debug(`Retrieved ${channelMessages.length} messages from #${channelName}`);
+            // Save to database
             for (const message of result.messages) {
                 if (message.user && message.text && message.ts) {
-                    // Save message to the database
                     try {
                         await createMessage({
                             slackInstallationId: user.id,
-                            channelId: channel.id, // Adjust type if needed
+                            channelId: channel.id,
                             originalSenderId: message.user,
                             messageText: message.text,
                             timestamp: parseFloat(message.ts),
-                            kafkaOffset: 0, // Assuming a default value
-                            processedForRag: false,
+                            kafkaOffset: 0,
+                            processedForRag: true,
                         });
                         debug(`Message saved to DB: ${message.text}`);
                     }
@@ -93,31 +91,39 @@ async function getMessagesFromChannel(slackClient, channelId, channelName, user)
         debug(`Error fetching messages from public channel #${channelName}:`, error);
     }
 }
-// Main Slack integration function to get messages from public channels
 async function slackIntegration(userID) {
     try {
-        // Getting the current token from the database
         const userObject = await getSlackInstallations({ userId: userID });
         debug(`All User: ${userObject}`);
-        // If you want to work with the first installation:
         const user = userObject && userObject.length > 0 ? userObject[0].toJSON() : null;
         debug(`User: ${JSON.stringify(user)}`);
         if (!user || !user.botAccessToken) {
             debug(`user: ${JSON.stringify(user)}`);
             throw new Error('User or token not found.');
         }
-        // Initialize Slack client with the retrieved token
         const slackClient = new WebClient(user.botAccessToken);
-        // Get public channels
         const ChannelInformation = await getPublicChannels(slackClient, user);
-        // Retrieve messages from each public channel
+        // Clear any existing messages for this user
+        messagesByUser.delete(user.userId);
+        // Fetch messages from all channels
         for (const channel of ChannelInformation) {
             if (channel.channelId && channel.name) {
                 await getMessagesFromChannel(slackClient, channel.channelId, channel.name, user);
             }
         }
+        // Upload all messages for this user at once
+        const userMessages = messagesByUser.get(user.userId) || [];
+        if (userMessages.length > 0) {
+            try {
+                debug(`Uploading ${userMessages} messages to Ragie for user ${user.userId}`);
+                await uploadMessagesToRagie(userMessages, user.userId);
+                debug(`Uploaded ${userMessages.length} messages to Ragie for user ${user.userId}`);
+            }
+            catch (error) {
+                debug('Error uploading messages to Ragie:', error);
+            }
+        }
         debug(`Total Messages Retrieved: ${SlackMessages.length}`);
-        debug('Messages:', SlackMessages);
         return SlackMessages;
     }
     catch (error) {
