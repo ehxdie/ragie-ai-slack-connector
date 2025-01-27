@@ -15,6 +15,7 @@ router.post('/', authenticateToken, postQuery);
 router.get('/responses', authenticateToken,  getResponse);
 router.post('/slack/events', authenticateToken, (req: any, res: any) => {
     // Check if the event is for URL verification (Slack verification request)
+    console.log(req.headers.authorization);
     if (req.body.type === 'url_verification') {
         return res.status(200).send({ challenge: req.body.challenge });
     }
