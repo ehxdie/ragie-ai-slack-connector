@@ -93,7 +93,7 @@ async function getMessagesFromChannel(slackClient: any, channelId: string, chann
 
         const result = await slackClient.conversations.history({
             channel: channelId,
-            limit: 3,
+            limit: 10,
         });
 
         if (result.messages) {
