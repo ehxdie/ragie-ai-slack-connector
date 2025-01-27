@@ -13,14 +13,14 @@ router.get('/slack/install', async (req: Request, res: Response) => {
 // Protected routes 
 router.post('/', authenticateToken, postQuery);
 router.get('/responses', authenticateToken,  getResponse);
-router.post('/slack/events', (req: any, res: any) => {
+router.post('/slack/events', authenticateToken, (req: any, res: any) => {
     // Check if the event is for URL verification (Slack verification request)
     if (req.body.type === 'url_verification') {
         return res.status(200).send({ challenge: req.body.challenge });
     }
 
-    // Otherwise, proceed with authentication middleware for other events
-    authenticateToken;
-}, slackEvents);
+    // Proceed to slackEvents
+    slackEvents(req, res);
+});
 
 module.exports = router;  
