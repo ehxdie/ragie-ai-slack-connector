@@ -14,12 +14,20 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-// If token exists in localStorage, redirect to the chat area
-if (localStorage.getItem('ragie_token')) {
-  router.push("/chat");
-}
+// Check if the token is already available in the URL or localStorage
+onMounted(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token') || localStorage.getItem('ragie_token');
+
+  // If the token is found, store it and redirect to the chat page
+  if (token) {
+    localStorage.setItem('ragie_token', token);
+    router.push("/chat");
+  }
+});
 </script>
