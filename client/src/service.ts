@@ -4,7 +4,7 @@ export async function sendAllMessages(chats: unknown) {
 
   try {
     let token = localStorage.getItem('ragie_token');
-    
+
     if (!token) {
       token = new URLSearchParams(window.location.search).get('token');
       if (token) {

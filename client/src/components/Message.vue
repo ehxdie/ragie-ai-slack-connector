@@ -10,7 +10,7 @@
     />
     <div>
       <div v-if="isUser" class="font-bold">You</div>
-      <div v-else class="font-bold">ChatGPT</div>
+      <div v-else class="font-bold">Ragie</div>
       <div>{{ content }}</div>
     </div>
   </div>
