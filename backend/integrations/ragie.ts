@@ -1,22 +1,21 @@
 const Groq = require("groq-sdk");
 const { queries } = require("../services/queryService");
 const { addAnswer } = require("../services/answerService");
-const { SlackMessages } = require("./slack");
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
-const { getMessages, updateMessage } = require("../services/database/messageService");
 const { createUserQuery } = require("../services/database/userQueries");
 const dotenv = require("dotenv");
 const debug = require('debug')('app:ragie');
-const pLimit = require('p-limit');
 
 dotenv.config();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const apiKey = process.env.API_KEY;
-const BATCH_SIZE = 100;
-const limit = pLimit(5);
 
-// Interfaces
+interface RagieChunk {
+    text: string;
+    score: number;
+}
+
 interface SlackMessage {
     user: string;
     text: string;
@@ -24,46 +23,8 @@ interface SlackMessage {
     channel: string;
 }
 
-interface SlackInstallationData {
-    id: string;
-    teamId: string;
-    teamName: string;
-    botUserId: string;
-    botAccessToken: string;
-    userAccessToken: string;
-    userId: string;
-    appId: string;
-    enterpriseId?: string | null;
-    isEnterpriseInstall: boolean;
-    timestamp: number;
-}
 
-interface MessageData {
-    id: string;
-    slackInstallationId: number;
-    channelId: number;
-    originalSenderId: string;
-    messageText: string;
-    timestamp: number;
-    kafkaOffset: number;
-    processedForRag: boolean;
-    createdAt?: Date;
-}
 
-interface RagieDocument {
-    document_id: string;
-    document_type: string;
-    document_source: string;
-    document_name: string;
-    document_uploaded_at: number;
-}
-
-interface RagieChunk {
-    text: string;
-    score: number;
-}
-
-// Utility functions
 async function retryWithBackoff<T>(
     operation: () => Promise<T>,
     maxRetries = 3,
@@ -83,23 +44,12 @@ async function retryWithBackoff<T>(
     throw lastError;
 }
 
-
-
-function convertToSlackMessage(dbMessage: MessageData): SlackMessage {
-    return {
-        user: dbMessage.originalSenderId,
-        text: dbMessage.messageText,
-        ts: dbMessage.timestamp.toString(),
-        channel: dbMessage.channelId.toString()
-    };
-}
-
-// Document management
-async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: string): Promise<void> {
+// Add new document management function
+async function uploadMessagesToRagie(messages: SlackMessage[], userId: string): Promise<void> {
     try {
         const documentName = `slack_messages_${userId}.json`;
 
-        // Get existing documents with error handling for response format
+        // Get existing documents
         const existingDoc = await retryWithBackoff(async () => {
             const response = await fetch("https://api.ragie.ai/documents", {
                 headers: {
@@ -107,14 +57,11 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
                     accept: "application/json",
                 }
             });
-            debug(`ragie response:${response}`);
+
             if (!response.ok) throw new Error(`Failed to fetch documents: ${response.status}`);
             const data = await response.json();
-            debug(`ragie response in json format ${data}`);
-            // Handle both array and object response formats
             const docs = Array.isArray(data) ? data : data.documents || [];
-            return docs.find((doc :any) => doc?.document_name === documentName);
-
+            return docs.find((doc: any) => doc?.document_name === documentName);
         });
 
         const documentContent = {
@@ -132,7 +79,7 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
                 users: [...new Set(messages.map(msg => msg.user))]
             }
         };
-        debug(`documentContent: ${documentContent}`);
+
         const formData = new FormData();
         const blob = new Blob([JSON.stringify(documentContent)], { type: "application/json" });
         formData.append("file", blob, documentName);
@@ -155,95 +102,15 @@ async function uploadSlackMessagesToRagie(messages: SlackMessage[], userId: stri
                 const errorText = await response.text();
                 throw new Error(`Upload failed with status ${response.status}: ${errorText}`);
             }
-
-            // Log success response
-            const responseData = await response.json();
-            debug('Upload response:', JSON.stringify(responseData, null, 2));
         });
 
-        debug(`Successfully ${existingDoc ? 'updated' : 'created'} document for user ${userId} with ${messages.length} messages`);
+        debug(`Successfully ${existingDoc ? 'updated' : 'created'} document for user ${userId}`);
     } catch (error) {
-        debug('Error uploading messages:', error instanceof Error ? error.stack : JSON.stringify(error, null, 2));
-        throw error;
-    }
-}
-// Message processing
-async function processSlackMessages(user: SlackInstallationData): Promise<string[]> {
-    debug(`Starting to process messages for user ${user.userId}...`);
-    try {
-        const dbMessagesObject = await getMessages({
-            slackInstallationId: user.id,
-            processedForRag: false
-        });
-        debug(` dbMessagesObject ${dbMessagesObject} `);
-
-
-        // Handle various response formats
-        let dbMessages: MessageData[] = [];
-
-        if (Array.isArray(dbMessagesObject)) {
-            // If it's an array, map over it to extract MessageData objects
-            dbMessages = dbMessagesObject.map((message: any) => message.toJSON());
-        } else if (dbMessagesObject) {
-            // If it's a single object, wrap it in an array
-            dbMessages = [dbMessagesObject.toJSON()];
-        }
-
-        debug(`All dbmessages ${dbMessages}`);
-
-        let dbMessage1:MessageData = dbMessagesObject && dbMessagesObject.length > 0 ? dbMessagesObject[0].toJSON():null;
-        debug(`dbMessage1${dbMessage1}`);
-        
-        let dbMessages2:MessageData[] = [];
-
-        if (Array.isArray(dbMessagesObject)) {
-            dbMessages2= dbMessagesObject.map(message =>
-                typeof message.toJSON === 'function' ? message.toJSON() : message
-            );
-        } else if (dbMessagesObject && typeof dbMessagesObject === 'object') {
-            if (typeof dbMessagesObject.toJSON === 'function') {
-                dbMessages2= [dbMessagesObject.toJSON()];
-            } else {
-                dbMessages2= [dbMessagesObject as MessageData];
-            }
-        }
-       
-        debug(`dbMessages2 ${dbMessages2}`);
-       
-
-        if (dbMessages.length === 0) {
-            debug(`No new messages found for user ${user.userId}`);
-            return [];
-        }
-
-        const batches = [];
-        for (let i = 0; i < dbMessages.length; i += BATCH_SIZE) {
-            batches.push(dbMessages.slice(i, i + BATCH_SIZE));
-        }
-
-        const processedMessageIds: string[] = [];
-
-        await Promise.all(batches.map(async batch => {
-            const slackMessages = batch.map(msg => convertToSlackMessage(msg));
-            debug(`slack messages ${slackMessages}`);
-            await limit(async () => {
-                await uploadSlackMessagesToRagie(slackMessages, user.userId);
-                await Promise.all(batch.map(msg =>
-                    updateMessage(msg.id, { processedForRag: true })
-                ));
-                processedMessageIds.push(...batch.map(msg => msg.id));
-            });
-        }));
-
-        debug(`Finished processing ${dbMessages.length} messages for user ${user.userId}`);
-        return processedMessageIds;
-    } catch (error) {
-        debug('Error processing messages:', JSON.stringify(error, null, 2));
+        debug('Error uploading messages:', error);
         throw error;
     }
 }
 
-// Retrieval
 async function retrieveChunks(query: string, userId: string): Promise<string> {
     return retryWithBackoff(async () => {
         const response = await fetch("https://api.ragie.ai/retrievals", {
@@ -301,7 +168,6 @@ async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
     );
 }
 
-// Main integration
 async function ragieIntegration(userID: string): Promise<void> {
     try {
         const userObject = await getSlackInstallations({ userId: userID });
@@ -310,7 +176,6 @@ async function ragieIntegration(userID: string): Promise<void> {
         }
 
         const user = userObject[0].toJSON();
-        const processedMessageIds = await processSlackMessages(user);
         const latestQuery = queries[queries.length - 1];
 
         if (!latestQuery?.trim()) {
@@ -327,7 +192,7 @@ async function ragieIntegration(userID: string): Promise<void> {
             userSlackId: user.userId,
             queryText: latestQuery,
             responseText: completionContent,
-            referencedMessageIds: processedMessageIds,
+            referencedMessageIds: [],
             createdAt: new Date(),
         });
 
@@ -341,9 +206,5 @@ async function ragieIntegration(userID: string): Promise<void> {
 
 module.exports = {
     ragieIntegration,
-    uploadSlackMessagesToRagie,
-    processSlackMessages,
-    retrieveChunks,
-    generateSystemPrompt,
-    getGroqChatCompletion
+    uploadMessagesToRagie
 };
