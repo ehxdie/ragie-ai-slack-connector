@@ -166,6 +166,7 @@ async function slackIntegration(userID: string): Promise<SlackMessage[]> {
         const userMessages = messagesByUser.get(user.userId) || [];
         if (userMessages.length > 0) {
             try {
+                debug(`Uploading ${userMessages} messages to Ragie for user ${user.userId}`);
                 await uploadMessagesToRagie(userMessages, user.userId);
                 debug(`Uploaded ${userMessages.length} messages to Ragie for user ${user.userId}`);
             } catch (error) {
