@@ -127,7 +127,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
             // Example usage
             const channelId = req.body.event.channel;
             
-            const channelInfo = getChannelInfo(channelId, botAccessToken);
+            const channelInfo = await getChannelInfo(channelId, botAccessToken);
             debug('Channel info:', channelInfo);
             const channelName: String = channelInfo?.name;
 
@@ -138,7 +138,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
                 // Fetch the channel data using the channel name
                 const channelData = await getAllChannels({ channelName });
                 debug('Channel data:', channelData);
-                
+
                 if (!channelData) {
                     return res.status(404).json({ error: 'Channel data not found' });
                 }
