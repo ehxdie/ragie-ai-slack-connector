@@ -40,7 +40,7 @@ router.post('/slack/events', async (req: IGetUserAuthInfoRequest, res: Response,
     }
 
     debug('Checking for request body:', req.body);
-    
+
     // For actual events, get the team_id from the Slack event
     const teamId = req.body?.team_id;
     debug('Team ID from event:', teamId);
@@ -58,7 +58,7 @@ router.post('/slack/events', async (req: IGetUserAuthInfoRequest, res: Response,
         const installation = installations[0];
 
         // Add the userId to the request object
-        req.userId = installation.user_id;
+        req.userId = installation.userId;
         debug('Added user ID to request:', req.userId);
 
         // Now call the events handler

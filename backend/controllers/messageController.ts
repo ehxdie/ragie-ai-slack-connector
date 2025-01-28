@@ -78,13 +78,16 @@ async function uploadMessagesToRagie(messages: SlackMessage[], userId: string): 
 }
 
 export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) => {
+    
     const userID: string = req.userId;
+
     debug('INCOMING SLACK EVENT - Raw request:', {
         body: req.body,
         headers: req.headers,
         method: req.method,
         path: req.path
     });
+
     try {
         const { type, challenge, event } = req.body;
 
