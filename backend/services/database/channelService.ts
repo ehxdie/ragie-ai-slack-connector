@@ -1,5 +1,8 @@
+import { get } from "http";
+
 const { db } = require("../../db/models"); 
 const debug = require("debug")("app:channel-crud");
+const axios = require('axios');
 const Channel = db.Channel;
 
 interface ChannelData {
@@ -117,10 +120,37 @@ const deleteChannel = async (id: number) => {
     }
 };
 
+// Function to get channel info
+async function getChannelInfo(channelId:any, botAccessToken:any) {
+    try {
+        const response = await axios.get('https://slack.com/api/conversations.info', {
+            headers: {
+                Authorization: `Bearer ${botAccessToken}`,
+                'Content-Type': 'application/json',
+            },
+            params: {
+                channel: channelId, // Pass the channel ID
+            },
+        });
+
+        if (response.data.ok) {
+            console.log('Channel Information:', response.data.channel);
+            return response.data.channel; // Contains channel details, including the name
+        } else {
+            console.error('Error fetching channel info:', response.data.error);
+        }
+    } catch (error:any) {
+        console.error('Failed to fetch channel info:', error.message);
+    }
+}
+
+
+
 module.exports = {
     createChannel,
     getAllChannels,
     getChannelById,
     updateChannel,
     deleteChannel,
+    getChannelInfo
 };

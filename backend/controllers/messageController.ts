@@ -4,7 +4,8 @@ const dotenv = require("dotenv");
 const debug = require('debug')('app:slackEvents');
 const { createMessage } = require('../services/database/messageService');
 const { getSlackInstallations } = require('../services/database/slackInstallationService');
-const { getAllChannels } = require('../services/database/channelService');
+const { getAllChannels, getChannelInfo } = require('../services/database/channelService');
+
 dotenv.config();
 
 const apiKey = process.env.API_KEY;
@@ -103,6 +104,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
             debug(`New message in channel ${channel}: ${text}`);
 
             let slackInstallationId: number | undefined;
+            let botAccessToken: string | undefined;
 
             try {
                 // Fetch the workspace installation data using the userId
@@ -113,12 +115,23 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
                 }
                 const installation = workspace[0];
                 slackInstallationId = installation.dataValues.id;
+                botAccessToken = installation.dataValues.botAccessToken;
                  
             } catch (error) {
                 debug('Error fetching workspace installation:', error);
                 return res.status(500).json({ error: 'Internal server error while fetching workspace installation' });
             }
 
+
+            // Getting channel name and channel ID
+            // Example usage
+            const channelId = req.body.event.channel;
+            
+            const channelInfo = getChannelInfo(channelId, botAccessToken);
+
+            debug('Channel info:', channelInfo);
+            
+            // Getting channel id from the channel name
             let channelDataId: number | undefined;
 
             try {
@@ -132,6 +145,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
 
                 const installation = channelData[0];
                 channelDataId = installation.dataValues.id;
+                debug('Channel data:', channelDataId);
 
             } catch (error) {
                 debug('Error fetching channel data:', error);
