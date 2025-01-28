@@ -154,7 +154,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
 
             const messageData = {
                 slackInstallationId,
-                channelDataId,
+                channelId:channelDataId,
                 originalSenderId: user,
                 messageText: text || '',
                 timestamp: parseFloat(ts),
