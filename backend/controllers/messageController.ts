@@ -111,8 +111,9 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
                 if (!workspace) {
                     return res.status(404).json({ error: 'Workspace installation not found' });
                 }
-
-                slackInstallationId = workspace.id;
+                const installation = workspace[0];
+                slackInstallationId = installation.dataValues.id;
+                 
             } catch (error) {
                 debug('Error fetching workspace installation:', error);
                 return res.status(500).json({ error: 'Internal server error while fetching workspace installation' });
@@ -123,12 +124,15 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
             try {
                 // Fetch the channel data using the channel ID
                 const channelData = await getAllChannels({ slackInstallationId });
+                debug('Channel data:', channelData);
 
                 if (!channelData) {
                     return res.status(404).json({ error: 'Channel data not found' });
                 }
 
-                channelDataId = channelData.id;
+                const installation = channelData[0];
+                channelDataId = installation.dataValues.id;
+
             } catch (error) {
                 debug('Error fetching channel data:', error);
                 return res.status(500).json({ error: 'Internal server error while fetching channel data' });
