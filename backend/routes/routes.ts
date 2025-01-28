@@ -25,7 +25,8 @@ router.get('/responses', authenticateToken,  getResponse);
 //         slackEvents(req, res, next);
 //     });
 // });
-router.post('/slack/events', authenticateToken, slackEvents);
+// router.post('/slack/events', authenticateToken, slackEvents);
+router.post('/slack/events', slackEvents);
 
 
 
