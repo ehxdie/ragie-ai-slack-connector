@@ -78,7 +78,7 @@ async function uploadMessagesToRagie(messages: SlackMessage[], userId: string): 
 }
 
 export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) => {
-    
+
     const userID: string = req.userId;
 
     debug('INCOMING SLACK EVENT - Raw request:', {
@@ -107,7 +107,7 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
             try {
                 // Fetch the workspace installation data using the userId
                 const workspace = await getSlackInstallations({ userId: userID });
-
+                debug('Workspace:', workspace);
                 if (!workspace) {
                     return res.status(404).json({ error: 'Workspace installation not found' });
                 }
