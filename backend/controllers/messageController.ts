@@ -128,17 +128,17 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
             const channelId = req.body.event.channel;
             
             const channelInfo = getChannelInfo(channelId, botAccessToken);
-
             debug('Channel info:', channelInfo);
-            
+            const channelName: String = channelInfo?.name;
+
             // Getting channel id from the channel name
             let channelDataId: number | undefined;
 
             try {
-                // Fetch the channel data using the channel ID
-                const channelData = await getAllChannels({ slackInstallationId });
+                // Fetch the channel data using the channel name
+                const channelData = await getAllChannels({ channelName });
                 debug('Channel data:', channelData);
-
+                
                 if (!channelData) {
                     return res.status(404).json({ error: 'Channel data not found' });
                 }
