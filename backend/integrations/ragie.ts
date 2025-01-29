@@ -119,7 +119,7 @@ async function uploadMessagesToRagie(messages: SlackMessage[], userId: string): 
     }
 }
 
-async function retrieveChunks(query: string, userId: string): Promise<{ chunks: string; metadata: WorkspaceMetadata }> {
+async function retrieveChunks(query: string, userId: string): Promise<any> {
     return retryWithBackoff(async () => {
         const response = await fetch("https://api.ragie.ai/retrievals", {
             method: "POST",
@@ -141,55 +141,50 @@ async function retrieveChunks(query: string, userId: string): Promise<{ chunks: 
 
         const data = await response.json();
         debug('Retrievals data:', data);
-        const chunks = data.scored_chunks
-            .slice(0, 10)  // Increased from 5 to 10 chunks
-            .map((chunk: RagieChunk) => chunk.text)
-            .join("\n\n")  // Better separation between chunks
-            .slice(0, 2000);  // Increased from 1000 to 2000 characters
 
-        // Get the metadata from the document
-        const metadataResponse = await fetch(`https://api.ragie.ai/documents/${data.document_id}`, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-            },
-        });
+        const documentName = `slack_messages_${userId}.json`;
+        const filteredChunks = data.scored_chunks
+            .filter((chunk: any) => chunk.document_name === documentName)
+            .map((chunk: any) => ({
+                document_id: chunk.document_id,
+                document_name: chunk.document_name,
+                text: chunk.text,
+                score: chunk.score,
+                id: chunk.id,
+                index: chunk.index,
+                document_metadata: chunk.document_metadata
+            }));
+        
+        debug('Filtered data:', filteredChunks);
 
-        if (!metadataResponse.ok) {
-            throw new Error(`Failed to retrieve metadata: ${metadataResponse.status}`);
-        }
+        // const metadataResponse = await fetch(`https://api.ragie.ai/documents/${data.document_id}`, {
+        //     headers: {
+        //         Authorization: `Bearer ${apiKey}`,
+        //     },
+        // });
 
-        const documentData = await metadataResponse.json();
-        return {
-            chunks,
-            metadata: documentData.metadata
-        };
+        // if (!metadataResponse.ok) {
+        //     throw new Error(`Failed to retrieve metadata: ${metadataResponse.status}`);
+        // }
+
+        // const documentData = await metadataResponse.json();
+        // return {
+        //     chunks,
+        //     metadata: documentData.metadata
+        // };
+        return filteredChunks
+
     });
 }
 
-function generateSystemPrompt(chunkText: string, userId: string, metadata: WorkspaceMetadata): string {
+function generateSystemPrompt(chunkText: string, userId: string): string {
     return `You are "Ragie AI", a professional but friendly AI chatbot assisting user ${userId}.
-Your responses should be based on the workspace information and context provided below.
-
-Workspace Information:
-- Total Messages: ${metadata.total_messages}
-- Total Channels: ${metadata.channels.length}
-- Channel List: ${metadata.channels.join(', ')}
-- Total Users: ${metadata.users.length}
-- Last Updated: ${metadata.last_updated}
-
-When answering questions about the workspace structure (channels, users, messages),
-always refer to this metadata first as it provides the most accurate information.
-
-Context from messages:
+Your responses should be based on the context provided below.
+Here is the relevant context:
 ===
 ${chunkText}
 ===
-END CONTEXT
-
-Remember to:
-1. Use the workspace information above for questions about channels, users, and message counts
-2. Use the context for specific message content and conversations
-3. Always be accurate with numbers and statistics from the workspace information`;
+END CONTEXT`;
 }
 
 async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
@@ -223,8 +218,10 @@ async function ragieIntegration(userID: string): Promise<void> {
             throw new Error('No valid query found');
         }
 
-        const { chunks, metadata } = await retrieveChunks(latestQuery, user.userId);
-        const systemPrompt = generateSystemPrompt(chunks, user.userId, metadata);
+        // const { chunks, metadata } = await retrieveChunks(latestQuery, user.userId);
+        const chunks = await retrieveChunks(latestQuery, user.userId);
+        const systemPrompt = generateSystemPrompt(chunks, user.userId);
+        // const systemPrompt = generateSystemPrompt(chunks, user.userId, metadata);
         const chatCompletion: any = await getGroqChatCompletion(systemPrompt, latestQuery);
         const completionContent = chatCompletion.choices[0]?.message?.content || "";
 
