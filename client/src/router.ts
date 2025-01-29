@@ -12,12 +12,24 @@ const routes = [
         path: "/chat",
         name: "ChatArea",
         component: ChatArea,
+        meta: { requiresAuth: true }, // Mark this route as requiring authentication
     },
 ];
 
 const router = createRouter({
     history: createWebHistory(),
     routes,
+});
+
+// Navigation Guard: Redirect to "/" if no token is found
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem("ragie_token");
+
+    if (to.meta.requiresAuth && !token) {
+        next("/"); // Redirect to Slack install page
+    } else {
+        next(); // Continue to the route
+    }
 });
 
 export default router;
