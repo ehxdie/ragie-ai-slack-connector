@@ -140,6 +140,7 @@ async function retrieveChunks(query: string, userId: string): Promise<{ chunks: 
         }
 
         const data = await response.json();
+        debug('Retrievals data:', data);
         const chunks = data.scored_chunks
             .slice(0, 10)  // Increased from 5 to 10 chunks
             .map((chunk: RagieChunk) => chunk.text)
