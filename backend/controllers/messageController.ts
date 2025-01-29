@@ -151,7 +151,6 @@ export const slackEvents = async (req: IGetUserAuthInfoRequest, res: Response) =
                 debug('Error fetching channel data:', error);
                 return res.status(500).json({ error: 'Internal server error while fetching channel data' });
             }
-
             const messageData = {
                 slackInstallationId,
                 channelId:channelDataId,
