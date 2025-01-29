@@ -22,7 +22,7 @@ const router = createRouter({
 });
 
 // Navigation Guard: Redirect to "/" if no token is found
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from,next) => {
     const token = localStorage.getItem("ragie_token");
 
     if (to.meta.requiresAuth && !token) {
