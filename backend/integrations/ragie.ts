@@ -153,21 +153,6 @@ async function retrieveChunks(query: string, userId: string): Promise<any> {
         
         debug('Filtered data:', filteredChunks);
 
-        // const metadataResponse = await fetch(`https://api.ragie.ai/documents/${data.document_id}`, {
-        //     headers: {
-        //         Authorization: `Bearer ${apiKey}`,
-        //     },
-        // });
-
-        // if (!metadataResponse.ok) {
-        //     throw new Error(`Failed to retrieve metadata: ${metadataResponse.status}`);
-        // }
-
-        // const documentData = await metadataResponse.json();
-        // return {
-        //     chunks,
-        //     metadata: documentData.metadata
-        // };
         return filteredChunks
 
     });
