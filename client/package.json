@@ -11,7 +11,10 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@types/dompurify": "^3.2.0",
     "@vueuse/core": "^10.7.1",
+    "dompurify": "^3.2.3",
+    "marked": "^15.0.6",
     "openai": "^4.24.1",
     "vue": "^3.3.11",
     "vue-router": "^4.5.0"
