@@ -11,9 +11,12 @@ const app = express();
 // Add CORS middleware
 app.use(
     cors({
-        origin: 'https://ragie-ai-slack-connector.vercel.app/', // Allow requests from the client
-        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-        credentials: true, // Include credentials if needed (e.g., cookies, auth)
+        origin: [
+            'https://ragie-ai-slack-connector.vercel.app',
+            'http://localhost:5173'
+        ],
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true,
     })
 );
 
