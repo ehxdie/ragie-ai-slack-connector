@@ -216,7 +216,6 @@ async function getGroqChatCompletion(systemPrompt: string, userQuery: string) {
         }),
         3,
         1000,
-        // 10s timeout for chat completion
     );
 }
 

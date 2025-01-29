@@ -9,9 +9,9 @@
   ],
   "compilerOptions": {
     "composite": true,
-    "noEmit": true,
+    "skipLibCheck": true,
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "types": ["node"]
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
   }
 }
