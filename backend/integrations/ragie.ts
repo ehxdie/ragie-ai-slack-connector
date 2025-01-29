@@ -145,15 +145,11 @@ async function retrieveChunks(query: string, userId: string): Promise<any> {
         const documentName = `slack_messages_${userId}.json`;
         const filteredChunks = data.scored_chunks
             .filter((chunk: any) => chunk.document_name === documentName)
-            .map((chunk: any) => ({
-                document_id: chunk.document_id,
-                document_name: chunk.document_name,
-                text: chunk.text,
-                score: chunk.score,
-                id: chunk.id,
-                index: chunk.index,
-                document_metadata: chunk.document_metadata
-            }));
+            .slice(0, 10)  // Increased from 5 to 10 chunks
+            .map((chunk: RagieChunk) => chunk.text)
+            .join("\n\n")  // Better separation between chunks
+            .slice(0, 2000);  // Increased from 1000 to 2000 characters
+
         
         debug('Filtered data:', filteredChunks);
 
