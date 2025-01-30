@@ -7,7 +7,7 @@
       <!-- Logo/Icon (optional) -->
       <div class="flex justify-center mb-6">
         <img
-          src="../assets/chatgpt.svg"
+          src="../assets/pUt_KSgB_400x400.png"
           alt="Ragie AI Logo"
           class="w-16 h-16"
         />
