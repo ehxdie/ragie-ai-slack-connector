@@ -86,72 +86,53 @@ async function getPublicChannels(slackClient: any, user: SlackInstallationData):
 
 const messagesByUser: Map<string, SlackMessage[]> = new Map();
 
-async function getMessagesFromChannel(
-    slackClient: any,
-    channelId: string,
-    channelName: string,
-    user: SlackInstallationData
-) {
+async function getMessagesFromChannel(slackClient: any, channelId: string, channelName: string, user: SlackInstallationData) {
     try {
-        const channelObject = await getAllChannels({
-            slackInstallationId: user.id,
-            channelName: channelName
+        const channelObject = await getAllChannels({ slackInstallationId: user.id, channelName: channelName });
+        const channel: Channel = channelObject && channelObject.length > 0 ? channelObject[0].toJSON() : null;
+
+        const result = await slackClient.conversations.history({
+            channel: channelId,
+            limit: 10,
         });
-        const channel: Channel = channelObject?.length > 0 ? channelObject[0].toJSON() : null;
 
-        let allMessages: any[] = [];
-        let nextCursor: string | undefined = undefined;
+        if (result.messages) {
+            const channelMessages = (result.messages as any[]).map((message) => ({
+                user: message.user,
+                text: message.text,
+                ts: message.ts,
+                channel: channelName,
+            }));
 
-        do {
-            const result: any = await slackClient.conversations.history({
-                channel: channelId,
-                limit: 200,  // Max limit per request
-                cursor: nextCursor,
-            });
+            // Add messages to the map instead of uploading immediately
+            if (!messagesByUser.has(user.userId)) {
+                messagesByUser.set(user.userId, []);
+            }
+            messagesByUser.get(user.userId)?.push(...channelMessages);
+            SlackMessages.push(...channelMessages);
 
-            if (result.messages) {
-                const channelMessages = result.messages.map((message: any) => ({
-                    user: message.user,
-                    text: message.text,
-                    ts: message.ts,
-                    channel: channelName,
-                }));
-
-                // Store messages
-                allMessages.push(...channelMessages);
-                if (!messagesByUser.has(user.userId)) {
-                    messagesByUser.set(user.userId, []);
-                }
-                messagesByUser.get(user.userId)?.push(...channelMessages);
-                SlackMessages.push(...channelMessages);
-
-                // Save messages to database
-                for (const message of result.messages) {
-                    if (message.user && message.text && message.ts) {
-                        try {
-                            await createMessage({
-                                slackInstallationId: user.id,
-                                channelId: channel.id,
-                                originalSenderId: message.user,
-                                messageText: message.text,
-                                timestamp: parseFloat(message.ts),
-                                kafkaOffset: 0,
-                                processedForRag: true,
-                            });
-                            debug(`Message saved to DB: ${message.text}`);
-                        } catch (error) {
-                            debug(`Failed to save message "${message.text}" to DB:`, error);
-                        }
+            // Save to database
+            for (const message of result.messages) {
+                if (message.user && message.text && message.ts) {
+                    try {
+                        await createMessage({
+                            slackInstallationId: user.id,
+                            channelId: channel.id,
+                            originalSenderId: message.user,
+                            messageText: message.text,
+                            timestamp: parseFloat(message.ts),
+                            kafkaOffset: 0,
+                            processedForRag: true,
+                        });
+                        debug(`Message saved to DB: ${message.text}`);
+                    } catch (error) {
+                        debug(`Failed to save message "${message.text}" to DB:`, error);
                     }
                 }
             }
-
-            nextCursor = result.response_metadata?.next_cursor; // Update cursor for next request
-        } while (nextCursor); // Continue until no more messages to fetch
-
-        debug(`Fetched ${allMessages.length} messages from #${channelName}`);
+        }
     } catch (error) {
-        debug(`Error fetching messages from channel #${channelName}:`, error);
+        debug(`Error fetching messages from public channel #${channelName}:`, error);
     }
 }
 
