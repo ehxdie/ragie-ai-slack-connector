@@ -148,7 +148,7 @@ async function retrieveChunks(query: string, userId: string): Promise<any> {
             .slice(0, 10)//ncreased from 5 to 10 chunks
             .map((chunk: RagieChunk) => chunk.text)
             .join("\n\n")  // Better separation between chunks
-            // .slice(0, 2000);  // Increased from 1000 to 2000 characters
+            .slice(0, 2000);  // Increased from 1000 to 2000 characters
 
 
         debug('Filtered data:', filteredChunks);
