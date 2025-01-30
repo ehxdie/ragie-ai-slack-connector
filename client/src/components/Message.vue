@@ -17,7 +17,7 @@
       </div>
       <img
         v-else
-        src="../assets/chatgpt.svg"
+        src="../assets/pUt_KSgB_400x400.png"
         alt="Assistant Avatar"
         class="w-8 h-8"
       />
