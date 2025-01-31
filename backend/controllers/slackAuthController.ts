@@ -112,11 +112,11 @@ export const slackOauthCallback = async (req: Request, res: Response) => {
                     // Add a flag to indicate fresh installation
                     localStorage.setItem('fresh_install', 'true');
                     
-                    window.location.href = 'http://localhost:5173/?token=${token}';
+                    window.location.href = 'https://ragie-ai-slack-connector.vercel.app/?token=${token}';
                 } catch (error) {
                     console.error('Failed to store token:', error);
                     // Redirect with error parameter
-                    window.location.href = 'http://localhost:5173/error?message=token_storage_failed';
+                    window.location.href =  'https://ragie-ai-slack-connector.vercel.app/error?message=token_storage_failed';
                 }
             </script>
         </body>

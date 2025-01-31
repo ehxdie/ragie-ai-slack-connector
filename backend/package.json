@@ -19,7 +19,7 @@
       "pre-push": "npm run test"
     }
   },
-  "author": "",
+  "author": "Edidiong Udosen Ephraim",
   "license": "ISC",
   "dependencies": {
     "@slack/web-api": "^7.7.0",
