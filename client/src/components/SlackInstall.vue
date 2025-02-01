@@ -57,13 +57,13 @@
             <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            <span>Access AI assistance directly in Slack</span>
+            <span>Access AI answers to queries of slack channel messages</span>
           </div>
           <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
             <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            <span>Seamless channel integration</span>
+            <span>Seamless workspace integration</span>
           </div>
           <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
             <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
