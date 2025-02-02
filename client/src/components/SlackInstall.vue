@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 w-full">
+  <div class="h-screen flex flex-col justify-center items-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 w-full">
     <div 
       class="max-w-lg w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 space-y-6 animate-fade-in"
       :class="{ 'animate-pulse': isLoading }"
